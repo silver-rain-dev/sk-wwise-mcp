@@ -3,14 +3,22 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastmcp import FastMCP
-from core.query import execute_object_query, summarize_and_save, get_project_info, get_installation_info
+from core.query import (
+    build_object_info_query as _build_object_info_query,
+    build_property_reference_query as _build_property_reference_query,
+    execute_object_query,
+    summarize_and_save,
+    get_project_info,
+    get_installation_info,
+    get_object_property,
+)
 from typing import Optional
 from waapi import CannotConnectToWaapiException
 
 mcp = FastMCP(name = "SK Wwise MCP Browse")
 
 @mcp.tool()
-def build_waapi_query(
+def build_object_info_query(
     from_path: Optional[list[str]] = None,
     from_type: Optional[list[str]] = None,
     return_fields: list[str] = ["id", "name", "type", "path", "shortId"],
@@ -50,47 +58,90 @@ def build_waapi_query(
         Children of a specific container:
             from_path=["\\Actor-Mixer Hierarchy\\Default Work Unit\\SFX"],
             select_transform="children"
+
+    IMPORTANT — Inherited properties:
+        Properties like @OutputBus return the LOCAL value, not the effective
+        (inherited) value. If @OverrideOutput is false, the object inherits
+        its output bus from an ancestor. To find the actual routing, query
+        the object's ancestors (select_transform="ancestors") and return
+        @OutputBus and @OverrideOutput to find the nearest ancestor that
+        sets the effective bus.
     """
-    query = {}
-
-    # from
-    if from_path:
-        query["from"] = {"path": from_path}
-    elif from_type:
-        query["from"] = {"ofType": from_type}
-
-    # where
-    where = []
-    if where_name_contains:
-        where.append({"name": {"contains": where_name_contains}})
-    if where_type_is:
-        where.append({"type": {"isIn": where_type_is}})
-    if where:
-        query["where"] = where
-
-    # transform
-    if select_transform:
-        query["transform"] = [{"select": [select_transform]}]
-
-    # options
-    query["options"] = {"return": return_fields}
-
-    return query
+    return _build_object_info_query(
+        from_path=from_path,
+        from_type=from_type,
+        return_fields=return_fields,
+        select_transform=select_transform,
+        where_name_contains=where_name_contains,
+        where_type_is=where_type_is,
+    )
 
 
 @mcp.tool
 def get_wwise_object_info(query: dict) -> dict:
     """
-    Get information about the Wwise project, including instance info and Actor-Mixer hierarchy objects.
+    Query Wwise objects and return a summary preview.
 
-    Returns a summary with total_count, type breakdown, and a preview of the first 10 results.
-    Full raw JSON output is saved to the file path in 'output_file'. Read that file for complete results or follow-up queries.
+    IMPORTANT: The returned 'preview' only contains the first 10 results.
+    The COMPLETE results are saved to the file path in 'output_file'.
+    You MUST read that file to see all results — do not treat the preview as the full dataset.
     """
     try:
         results = execute_object_query(query)
         return summarize_and_save(results)
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}  
+
+@mcp.tool()
+def build_property_reference_query(
+    object_path: Optional[str] = None,
+    object_guid: Optional[str] = None,
+    object_name_with_type: Optional[str] = None,
+    class_id: Optional[int] = None,
+) -> dict:
+    """
+    Builds a WAAPI ak.wwise.core.object.getPropertyAndReferenceNames query dict.
+    Use this to discover all valid property and reference names for a specific Wwise object.
+
+    Args:
+        object_path:           Project path to the object.
+                               e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+        object_guid:           GUID of the object.
+                               e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
+        object_name_with_type: Name qualified by type or short ID.
+                               e.g. "Sound:Footstep_Walk", "Event:Play_Sound_01", "Global:245489792"
+        class_id:              Class ID (unsigned 32-bit integer) of the object type.
+
+    Provide exactly one of object_path, object_guid, or object_name_with_type.
+
+    Examples:
+        By path:
+            object_path="\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+        By type:name:
+            object_name_with_type="Sound:Footstep_Walk"
+        By GUID:
+            object_guid="{aabbcc00-1122-3344-5566-77889900aabb}"
+    """
+    return _build_property_reference_query(
+        object_path=object_path,
+        object_guid=object_guid,
+        object_name_with_type=object_name_with_type,
+        class_id=class_id,
+    )
+
+
+@mcp.tool
+def get_property_and_reference_names(query: dict) -> dict:
+    """Get all valid property and reference names for a Wwise object.
+
+    Pass in a query built by build_property_reference_query.
+    Returns lists of properties (e.g. Volume, Pitch) and references (e.g. Attenuation, OutputBus)
+    that can be used with setProperty / setReference calls."""
+    try:
+        return get_object_property(query)
+    except CannotConnectToWaapiException:
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
 
 @mcp.tool
 def get_wwise_installation_info() -> dict:

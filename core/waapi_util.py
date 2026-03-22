@@ -57,5 +57,22 @@ def get_dispatcher() -> WaapiDispatcher:
     return _dispatcher
 
 
+def _reconnect():
+    """Force a fresh WAAPI connection and dispatcher."""
+    global _client, _dispatcher
+    if _client is not None:
+        try:
+            _client.disconnect()
+        except Exception:
+            pass
+    _client = None
+    _dispatcher = None
+
+
 def call(uri: str, args: dict = {}, options: dict = {}) -> dict:
-    return get_dispatcher().call(uri, args, options=options)
+    result = get_dispatcher().call(uri, args, options=options)
+    if result is None:
+        # Stale connection — reconnect and retry once
+        _reconnect()
+        result = get_dispatcher().call(uri, args, options=options)
+    return result
