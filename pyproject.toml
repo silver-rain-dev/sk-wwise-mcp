@@ -1,0 +1,10 @@
+[project]
+name = "sk-wwise-mcp"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.12"
+dependencies = [
+    "fastmcp>=3.1.1",
+    "waapi-client>=0.8.1",
+]
