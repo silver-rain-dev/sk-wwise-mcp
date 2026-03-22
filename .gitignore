@@ -1,0 +1,26 @@
+# Claude Code
+CLAUDE.md
+.mcp.json
+
+# Python
+__pycache__/
+*.pyc
+.venv/
+*.egg-info/
+dist/
+build/
+
+# Pytest
+.pytest_cache/
+
+# Query output files
+*_output.json
+*_hierarchy.json
+
+# IDE
+.vscode/
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db
