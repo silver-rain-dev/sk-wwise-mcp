@@ -55,17 +55,65 @@ def build_property_reference_query(
     return query
 
 
+def build_property_info_query(
+    property_name: str,
+    object_path: Optional[str] = None,
+    object_guid: Optional[str] = None,
+    object_name_with_type: Optional[str] = None,
+    class_id: Optional[int] = None,
+) -> dict:
+    """Build a WAAPI ak.wwise.core.object.getPropertyInfo query dict."""
+    query = {"property": property_name}
+    if object_path:
+        query["object"] = object_path
+    elif object_guid:
+        query["object"] = object_guid
+    elif object_name_with_type:
+        query["object"] = object_name_with_type
+    if class_id is not None:
+        query["classId"] = class_id
+    return query
+
+
 def execute_object_query(query: dict) -> list[dict]:
     """Execute a WAAPI ak.wwise.core.object.get query and return the results."""
     options = query.pop("options", {})
     result = call("ak.wwise.core.object.get", query, options)
     return result.get("return", []) if result else []
 
-# ak.wwise.core.object.diff
-# ak.wwise.core.object.getAttenuationCurve
+def get_attenuation_curve(query: dict) -> dict:
+    """Execute a WAAPI ak.wwise.core.object.getAttenuationCurve query."""
+    return call("ak.wwise.core.object.getAttenuationCurve", query)
+
+
 def get_object_property(query: dict) -> dict:
     """Execute a WAAPI ak.wwise.core.object.getPropertyAndReferenceNames query."""
     return call("ak.wwise.core.object.getPropertyAndReferenceNames", query)
+
+def get_property_info(query: dict) -> dict:
+    """Execute a WAAPI ak.wwise.core.object.getPropertyInfo query."""
+    return call("ak.wwise.core.object.getPropertyInfo", query)
+
+
+def diff_objects(query: dict) -> dict:
+    """Execute a WAAPI ak.wwise.core.object.diff query."""
+    return call("ak.wwise.core.object.diff", query)
+
+
+def is_property_linked(query: dict) -> dict:
+    """Execute a WAAPI ak.wwise.core.object.isLinked query."""
+    return call("ak.wwise.core.object.isLinked", query)
+
+
+def is_property_enabled(query: dict) -> dict:
+    """Execute a WAAPI ak.wwise.core.object.isPropertyEnabled query."""
+    return call("ak.wwise.core.object.isPropertyEnabled", query)
+
+
+def get_object_types() -> dict:
+    """Execute a WAAPI ak.wwise.core.object.getTypes query."""
+    return call("ak.wwise.core.object.getTypes")
+
 
 def get_installation_info() -> dict:
     """Executes ak.wwise.core.getInfo and return the results"""
