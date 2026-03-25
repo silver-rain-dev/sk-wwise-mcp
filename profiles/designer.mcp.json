@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "sk-wwise-browse": {
+      "command": "g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/.venv/Scripts/python.exe",
+      "args": ["g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/mcp_browse/server.py"]
+    },
+    "sk-wwise-audition": {
+      "command": "g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/.venv/Scripts/python.exe",
+      "args": ["g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/mcp_audition/server.py"]
+    }
+  }
+}

@@ -25,6 +25,39 @@ def test_build_object_info_query_returns_dict():
     assert "from" in result
 
 
+def test_build_object_info_query_where_is_separate_transform_step():
+    """where clauses are separate transform steps using array-based WAAPI format."""
+    result = build_object_info_query(
+        from_path=["\\Events"],
+        select_transform="descendants",
+        where_type_is=["Event"],
+    )
+    assert "where" not in result, "where must not be at the top level"
+    assert len(result["transform"]) == 2
+    assert result["transform"][0] == {"select": ["descendants"]}
+    assert result["transform"][1] == {"where": ["type:isIn", ["Event"]]}
+
+
+def test_build_object_info_query_where_without_select():
+    """where without select_transform still creates a transform entry."""
+    result = build_object_info_query(
+        from_path=["\\Events"],
+        where_type_is=["Event"],
+    )
+    assert len(result["transform"]) == 1
+    assert result["transform"][0] == {"where": ["type:isIn", ["Event"]]}
+
+
+def test_build_object_info_query_name_contains():
+    """name:contains uses array-based WAAPI format."""
+    result = build_object_info_query(
+        from_path=["\\Events"],
+        select_transform="descendants",
+        where_name_contains="footstep",
+    )
+    assert result["transform"][1] == {"where": ["name:contains", "footstep"]}
+
+
 @patch("mcp_browse.server.get_object_property")
 def test_get_property_and_reference_names_by_path(mock_prop):
     mock_prop.return_value = {"properties": ["Volume"], "references": ["OutputBus"]}

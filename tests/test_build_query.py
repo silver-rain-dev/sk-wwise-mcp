@@ -42,12 +42,12 @@ def test_no_transform_by_default():
 
 def test_where_name_contains():
     result = build_object_info_query(from_path=["\\Events"], where_name_contains="footstep")
-    assert {"name": {"contains": "footstep"}} in result["where"]
+    assert {"where": ["name:contains", "footstep"]} in result["transform"]
 
 
 def test_where_type_is():
     result = build_object_info_query(from_path=["\\Events"], where_type_is=["Event"])
-    assert {"type": {"isIn": ["Event"]}} in result["where"]
+    assert {"where": ["type:isIn", ["Event"]]} in result["transform"]
 
 
 def test_combined_where_filters():
@@ -56,7 +56,8 @@ def test_combined_where_filters():
         where_name_contains="footstep",
         where_type_is=["Event"],
     )
-    assert len(result["where"]) == 2
+    where_entries = [t for t in result["transform"] if "where" in t]
+    assert len(where_entries) == 2
 
 
 def test_no_where_by_default():

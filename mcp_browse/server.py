@@ -14,6 +14,8 @@ from core.query import (
     get_object_property,
     get_property_info as _get_property_info,
     get_object_types as _get_object_types,
+    get_switch_assignments as _get_switch_assignments,
+    get_blend_assignments as _get_blend_assignments,
     get_attenuation_curve as _get_attenuation_curve,
     diff_objects as _diff_objects,
     is_property_linked as _is_property_linked,
@@ -90,9 +92,22 @@ def get_wwise_object_info(query: dict) -> dict:
     """
     Query Wwise objects and return a summary preview.
 
+    IMPORTANT: Always use build_object_info_query() first to construct the query dict,
+    then pass its output to this function. Do NOT hand-craft the query dict directly —
+    the WAAPI query format is complex and error-prone; build_object_info_query() ensures
+    correct structure (from, transform, options) every time.
+
     IMPORTANT: The returned 'preview' only contains the first 10 results.
     The COMPLETE results are saved to the file path in 'output_file'.
     You MUST read that file to see all results — do not treat the preview as the full dataset.
+
+    Example workflow:
+        query = build_object_info_query(
+            from_path=["\\\\Events"],
+            select_transform="descendants",
+            where_type_is=["Event"],
+        )
+        results = get_wwise_object_info(query=query)
     """
     try:
         results = execute_object_query(query)
@@ -395,6 +410,67 @@ def get_wwise_project_info() -> dict:
     Use this to understand the project context before performing queries or modifications."""
     try:
         return get_project_info()
+    except CannotConnectToWaapiException:
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.tool()
+def get_switch_container_assignments(
+    object_path: Optional[str] = None,
+    object_guid: Optional[str] = None,
+    object_name_with_type: Optional[str] = None,
+) -> dict:
+    """Get the switch/state-to-child assignments for a Switch Container.
+
+    Returns which child object plays for each switch or state value.
+    Use this to audit assignments, find unassigned switches, or document switch mappings.
+
+    Args:
+        object_path:           Project path to the Switch Container.
+                               e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep_Switch"
+        object_guid:           GUID of the Switch Container.
+        object_name_with_type: type:name. e.g. "Global:245489792"
+
+    Provide exactly one of object_path, object_guid, or object_name_with_type.
+
+    Returns {"return": [...]} — array of assignment pairs, each containing:
+        child:         GUID/name/path of the child object assigned to a switch/state
+        stateOrSwitch: GUID/name/path of the switch or state value"""
+    query = {}
+    if object_path:
+        query["id"] = object_path
+    elif object_guid:
+        query["id"] = object_guid
+    elif object_name_with_type:
+        query["id"] = object_name_with_type
+    try:
+        return _get_switch_assignments(query)
+    except CannotConnectToWaapiException:
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.tool()
+def get_blend_track_assignments(
+    blend_track_guid: str,
+) -> dict:
+    """Get the list of assignments for a Blend Track. Only accepts GUIDs.
+
+    Use this to inspect which children are assigned to a Blend Track and their crossfade edge config.
+
+    Args:
+        blend_track_guid: The GUID of the Blend Track.
+                          e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
+
+    Returns {"return": [...]} — array of assignments, each containing:
+        child: GUID of the assigned child object
+        index: position among the Blend Track's assignments
+        edges: array of 2 edge configs [left, right], each with:
+            fadeMode:     "None", "Manual", or "Automatic"
+            fadeShape:    curve shape (Linear, SCurve, etc.)
+            edgePosition: position within the Game Parameter range
+            fadePosition: fade curve start/end (Manual mode only)"""
+    try:
+        return _get_blend_assignments({"object": blend_track_guid})
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 

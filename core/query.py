@@ -20,16 +20,19 @@ def build_object_info_query(
     elif from_type:
         query["from"] = {"ofType": from_type}
 
-    where = []
+    where_clauses = []
     if where_name_contains:
-        where.append({"name": {"contains": where_name_contains}})
+        where_clauses.append(["name:contains", where_name_contains])
     if where_type_is:
-        where.append({"type": {"isIn": where_type_is}})
-    if where:
-        query["where"] = where
+        where_clauses.append(["type:isIn", where_type_is])
 
+    transform = []
     if select_transform:
-        query["transform"] = [{"select": [select_transform]}]
+        transform.append({"select": [select_transform]})
+    for clause in where_clauses:
+        transform.append({"where": clause})
+    if transform:
+        query["transform"] = transform
 
     query["options"] = {"return": return_fields}
 
@@ -80,6 +83,16 @@ def execute_object_query(query: dict) -> list[dict]:
     options = query.pop("options", {})
     result = call("ak.wwise.core.object.get", query, options)
     return result.get("return", []) if result else []
+
+def get_switch_assignments(query: dict) -> dict:
+    """Execute a WAAPI ak.wwise.core.switchContainer.getAssignments query."""
+    return call("ak.wwise.core.switchContainer.getAssignments", query)
+
+
+def get_blend_assignments(query: dict) -> dict:
+    """Execute a WAAPI ak.wwise.core.blendContainer.getAssignments query."""
+    return call("ak.wwise.core.blendContainer.getAssignments", query)
+
 
 def get_attenuation_curve(query: dict) -> dict:
     """Execute a WAAPI ak.wwise.core.object.getAttenuationCurve query."""
