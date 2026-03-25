@@ -19,6 +19,7 @@ from core.query import (
     is_property_linked as _is_property_linked,
     is_property_enabled as _is_property_enabled,
 )
+from core.waapi_util import ping as _ping
 from typing import Optional
 from waapi import CannotConnectToWaapiException
 
@@ -152,15 +153,16 @@ def get_wwise_attenuation_curve(
 
 
 @mcp.tool()
-def build_property_reference_query(
+def get_property_and_reference_names(
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
     class_id: Optional[int] = None,
 ) -> dict:
-    """
-    Builds a WAAPI ak.wwise.core.object.getPropertyAndReferenceNames query dict.
-    Use this to discover all valid property and reference names for a specific Wwise object.
+    """Get all valid property and reference names for a Wwise object.
+
+    Returns lists of properties (e.g. Volume, Pitch) and references (e.g. Attenuation, OutputBus)
+    that can be used with setProperty / setReference calls.
 
     Args:
         object_path:           Project path to the object.
@@ -169,47 +171,19 @@ def build_property_reference_query(
                                e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
         object_name_with_type: Name qualified by type or short ID.
                                e.g. "Sound:Footstep_Walk", "Event:Play_Sound_01", "Global:245489792"
+                               Supported types: StateGroup, SwitchGroup, SoundBank, GameParameter,
+                               Event, Effect, AudioDevice, Trigger, Attenuation, DialogueEvent,
+                               Bus, AuxBus, Conversion, ModulatorLfo, ModulatorEnvelope,
+                               ModulatorTime, Platform, Language, AcousticTexture, Global
         class_id:              Class ID (unsigned 32-bit integer) of the object type.
 
-    Provide exactly one of object_path, object_guid, or object_name_with_type.
-
-    Examples:
-        By path:
-            object_path="\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
-        By type:name:
-            object_name_with_type="Sound:Footstep_Walk"
-        By GUID:
-            object_guid="{aabbcc00-1122-3344-5566-77889900aabb}"
-    """
-    return _build_property_reference_query(
+    Provide exactly one of object_path, object_guid, object_name_with_type, or class_id."""
+    query = _build_property_reference_query(
         object_path=object_path,
         object_guid=object_guid,
         object_name_with_type=object_name_with_type,
         class_id=class_id,
     )
-
-
-@mcp.tool
-def get_property_and_reference_names(query: dict) -> dict:
-    """Get all valid property and reference names for a Wwise object.
-
-    Pass in a query built by build_property_reference_query.
-    Returns lists of properties (e.g. Volume, Pitch) and references (e.g. Attenuation, OutputBus)
-    that can be used with setProperty / setReference calls.
-
-    WAAPI function: ak.wwise.core.object.getPropertyAndReferenceNames
-
-    Argument schema (requires one of 'object' or 'classId'):
-        object (string) — The ID (GUID), name, or path of the object. Accepts:
-            - type:name     e.g. "Event:Play_Sound_01", "SoundBank:MySoundBank", "Global:245489792"
-                            Supported types: StateGroup, SwitchGroup, SoundBank, GameParameter,
-                            Event, Effect, AudioDevice, Trigger, Attenuation, DialogueEvent,
-                            Bus, AuxBus, Conversion, ModulatorLfo, ModulatorEnvelope,
-                            ModulatorTime, Platform, Language, AcousticTexture, Global
-            - GUID          e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
-            - project path  e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
-        classId (integer) — Class ID of the object type. Unsigned 32-bit (0 to 4294967295).
-    """
     try:
         return get_object_property(query)
     except CannotConnectToWaapiException:
@@ -217,23 +191,21 @@ def get_property_and_reference_names(query: dict) -> dict:
 
 
 @mcp.tool()
-def build_property_info_query(
+def get_wwise_property_info(
     property_name: str,
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
     class_id: Optional[int] = None,
 ) -> dict:
-    """
-    Builds a WAAPI ak.wwise.core.object.getPropertyInfo query dict.
-    Use this to get detailed info about a specific property on a Wwise object (type, min, max, default).
+    """Get detailed info about a specific property on a Wwise object (type, min, max, default).
 
-    Requires 'property_name' plus one of: object_path, object_guid, object_name_with_type, or class_id.
+    Use get_property_and_reference_names first to discover valid property names.
+    Use this to validate values before calling setProperty.
 
     Args:
         property_name:         The property name to get info for.
                                e.g. "Volume", "Pitch", "Lowpass", "IsLoopingEnabled"
-                               Use get_property_and_reference_names first to discover valid names.
         object_path:           Project path to the object.
                                e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
         object_guid:           GUID of the object.
@@ -242,34 +214,16 @@ def build_property_info_query(
                                e.g. "Sound:Footstep_Walk", "Event:Play_Sound_01", "Global:245489792"
         class_id:              Class ID (unsigned 32-bit integer) as an alternative to object.
 
-    Object identification schema (shared with build_property_reference_query):
-        - path:      "\\\\Category\\\\Work Unit\\\\ObjectName"
-        - GUID:      "{aabbcc00-1122-3344-5566-77889900aabb}"
-        - type:name: "Sound:Footstep_Walk", "Event:Play_Sound_01", "Global:245489792"
-        - class_id:  unsigned 32-bit integer
+    Provide property_name plus one of object_path, object_guid, object_name_with_type, or class_id.
 
-    Examples:
-        Get Volume range for a Sound:
-            property_name="Volume", object_path="\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
-        Get Pitch info by type:name:
-            property_name="Pitch", object_name_with_type="Sound:Footstep_Walk"
-    """
-    return _build_property_info_query(
+    Returns the property's type, default value, min/max range, and display name."""
+    query = _build_property_info_query(
         property_name=property_name,
         object_path=object_path,
         object_guid=object_guid,
         object_name_with_type=object_name_with_type,
         class_id=class_id,
     )
-
-
-@mcp.tool
-def get_wwise_property_info(query: dict) -> dict:
-    """Get detailed info about a specific property on a Wwise object.
-
-    Pass in a query built by build_property_info_query.
-    Returns the property's type, default value, min/max range, and display name.
-    Use this to validate values before calling setProperty."""
     try:
         return _get_property_info(query)
     except CannotConnectToWaapiException:
@@ -442,8 +396,20 @@ def get_wwise_project_info() -> dict:
     try:
         return get_project_info()
     except CannotConnectToWaapiException:
-        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}  
-    
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.tool
+def ping_wwise() -> dict:
+    """Check if WAAPI is currently available. No arguments required.
+
+    Returns {"isAvailable": true} if Wwise is running and WAAPI is ready.
+    Returns {"isAvailable": false} if Wwise is not running, WAAPI is disabled,
+    or a modal dialog is blocking WAAPI access.
+
+    Use this before other calls to verify connectivity."""
+    return _ping()
+
 
 if __name__ == "__main__":
     mcp.run(transport="stdio")

@@ -69,6 +69,14 @@ def _reconnect():
     _dispatcher = None
 
 
+def ping() -> dict:
+    """Check if WAAPI is available. Returns {"isAvailable": bool}."""
+    try:
+        return get_dispatcher().call("ak.wwise.core.ping")
+    except Exception:
+        return {"isAvailable": False}
+
+
 def call(uri: str, args: dict = {}, options: dict = {}) -> dict:
     result = get_dispatcher().call(uri, args, options=options)
     if result is None:

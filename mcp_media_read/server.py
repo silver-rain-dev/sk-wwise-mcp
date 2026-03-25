@@ -3,7 +3,7 @@ from pathlib import Path
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from fastmcp import FastMCP
-from core.media import get_min_max_peaks, get_min_max_peaks_trimmed
+from core.media import get_min_max_peaks, get_min_max_peaks_trimmed, get_media_pool, get_media_pool_fields as _get_media_pool_fields
 from typing import Optional
 from waapi import CannotConnectToWaapiException
 
@@ -71,6 +71,85 @@ def get_audio_source_peaks(
             return get_min_max_peaks(query)
         else:
             return get_min_max_peaks_trimmed(query)
+    except CannotConnectToWaapiException:
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.tool()
+def query_media_pool(
+    search_text: Optional[str] = None,
+    databases: Optional[list[str]] = None,
+    filters: Optional[list[dict]] = None,
+    max_results: Optional[int] = None,
+) -> dict:
+    """Retrieve files from the Wwise Media Pool. Read-only — does not modify the project.
+
+    Use this to search and inspect source audio files in the project's media databases.
+
+    Args:
+        search_text:  Fuzzy search text (case-insensitive). If omitted, returns all files
+                      matching the filters and databases.
+        databases:    List of database paths/GUIDs to search. If omitted, all databases are included.
+                      e.g. ["\\Databases\\Project Originals"]
+        filters:      List of filter dicts to apply. Each filter requires "type" and "value".
+                      Filter types:
+                        "field"            — filter by a media pool field (requires "field", "operator", "value")
+                        "audioDescription" — filter by description of desired audio content
+                        "audioSimilarity"  — filter by similarity to an audio file at a given path
+
+                      Available fields:
+                        "Filename", "WAV/Duration", "WAV/Sample Rate", "WAV/Bit Depth",
+                        "WAV/Channels", "WAV/Channel Configuration", "WAV/Data Size",
+                        "WAV/Loop Start", "WAV/Loop End", "WAV/Marker Count", "WAV/Samples"
+                        Plus IXML metadata fields — use get_media_pool_fields to discover them.
+
+                      Operators for text fields:
+                        "equals", "notEquals", "contains", "startsWith", "endsWith", "matchesRegex"
+                      Operators for numeric fields:
+                        "equals", "notEquals", "lessThan", "greaterThan",
+                        "lessThanOrEqual", "greaterThanOrEqual"
+
+                      Examples:
+                        [{"type": "field", "field": "WAV/Sample Rate", "operator": "equals", "value": 48000}]
+                        [{"type": "field", "field": "Filename", "operator": "contains", "value": "footstep"}]
+                        [{"type": "audioDescription", "value": "explosion impact"}]
+                        [{"type": "audioSimilarity", "value": "C:/audio/reference.wav", "weight": 0.8}]
+
+        max_results:  Maximum number of files to return. Default 1000 if omitted.
+
+    Returns {"return": [...]} — array of file objects with properties defined by return options."""
+    query = {}
+    if search_text:
+        query["searchText"] = search_text
+    if databases:
+        query["databases"] = databases
+    if filters:
+        query["filters"] = filters
+    if max_results is not None:
+        query["maxResults"] = max_results
+    try:
+        return get_media_pool(query)
+    except CannotConnectToWaapiException:
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.tool
+def get_media_pool_fields() -> dict:
+    """Get all available fields in the Media Pool. No arguments required. Read-only.
+
+    Use this to discover valid field names for query_media_pool filters.
+    Some fields are always available (WAV fields), others are discovered when the Media Pool scans audio files.
+
+    Standard WAV fields:
+        "Filename", "WAV/Duration", "WAV/Sample Rate", "WAV/Bit Depth",
+        "WAV/Channels", "WAV/Channel Configuration", "WAV/Data Size",
+        "WAV/Loop Start", "WAV/Loop End", "WAV/Marker Count", "WAV/Samples"
+
+    Additional fields from IXML metadata chunks may also be returned depending on the project's audio files.
+
+    Returns {"return": [...]} — array of field name strings."""
+    try:
+        return _get_media_pool_fields()
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 

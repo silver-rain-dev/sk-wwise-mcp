@@ -8,8 +8,6 @@ from mcp_browse.server import (
     build_object_info_query,
     get_wwise_object_info,
     get_wwise_attenuation_curve,
-    build_property_reference_query,
-    build_property_info_query,
     get_property_and_reference_names,
     get_wwise_property_info,
     diff_wwise_objects,
@@ -27,9 +25,11 @@ def test_build_object_info_query_returns_dict():
     assert "from" in result
 
 
-def test_build_property_reference_query_returns_dict():
-    result = build_property_reference_query(object_path="\\Events\\Play")
-    assert result["object"] == "\\Events\\Play"
+@patch("mcp_browse.server.get_object_property")
+def test_get_property_and_reference_names_by_path(mock_prop):
+    mock_prop.return_value = {"properties": ["Volume"], "references": ["OutputBus"]}
+    result = get_property_and_reference_names(object_path="\\Events\\Play")
+    assert result["properties"] == ["Volume"]
 
 
 @patch("mcp_browse.server.execute_object_query")
@@ -48,15 +48,15 @@ def test_get_wwise_object_info_connection_error(mock_execute):
 
 
 @patch("mcp_browse.server.get_object_property")
-def test_get_property_and_reference_names_success(mock_prop):
+def test_get_property_and_reference_names_by_guid(mock_prop):
     mock_prop.return_value = {"properties": ["Volume"]}
-    result = get_property_and_reference_names({"object": "\\Events\\Play"})
+    result = get_property_and_reference_names(object_guid="{aabb-1122}")
     assert result["properties"] == ["Volume"]
 
 
 @patch("mcp_browse.server.get_object_property", side_effect=CannotConnectToWaapiException)
 def test_get_property_and_reference_names_connection_error(mock_prop):
-    result = get_property_and_reference_names({"object": "\\Events\\Play"})
+    result = get_property_and_reference_names(object_path="\\Events\\Play")
     assert "error" in result
 
 
@@ -123,31 +123,25 @@ def test_get_wwise_attenuation_curve_connection_error(mock_curve):
     assert "error" in result
 
 
-# --- build_property_info_query ---
-
-def test_build_property_info_query_returns_dict():
-    result = build_property_info_query(property_name="Volume", object_path="\\path\\Sound")
-    assert result["property"] == "Volume"
-    assert result["object"] == "\\path\\Sound"
-
-
-def test_build_property_info_query_by_guid():
-    result = build_property_info_query(property_name="Pitch", object_guid="{aabb-1122}")
-    assert result["object"] == "{aabb-1122}"
-
-
 # --- get_wwise_property_info ---
 
 @patch("mcp_browse.server._get_property_info")
-def test_get_wwise_property_info_success(mock_info):
+def test_get_wwise_property_info_by_path(mock_info):
     mock_info.return_value = {"type": "Real64", "default": 0.0, "min": -200.0, "max": 12.0}
-    result = get_wwise_property_info({"object": "\\path\\Sound", "property": "Volume"})
+    result = get_wwise_property_info(property_name="Volume", object_path="\\path\\Sound")
+    assert result["type"] == "Real64"
+
+
+@patch("mcp_browse.server._get_property_info")
+def test_get_wwise_property_info_by_guid(mock_info):
+    mock_info.return_value = {"type": "Real64", "default": 0.0}
+    result = get_wwise_property_info(property_name="Pitch", object_guid="{aabb-1122}")
     assert result["type"] == "Real64"
 
 
 @patch("mcp_browse.server._get_property_info", side_effect=CannotConnectToWaapiException)
 def test_get_wwise_property_info_connection_error(mock_info):
-    result = get_wwise_property_info({"object": "\\path\\Sound", "property": "Volume"})
+    result = get_wwise_property_info(property_name="Volume", object_path="\\path\\Sound")
     assert "error" in result
 
 
