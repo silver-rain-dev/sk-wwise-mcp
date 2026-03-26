@@ -26,7 +26,7 @@ mcp = FastMCP(name="SK Wwise MCP Profiling")
 @mcp.tool()
 def get_profiler_loaded_media(
     time: int | str = "capture",
-) -> dict:
+):
     """Retrieve loaded media files at a specific profiler capture time.
 
     Equivalent to the Loaded Media tab in the Advanced Profiler.
@@ -53,7 +53,7 @@ def get_profiler_loaded_media(
 @mcp.tool()
 def get_profiler_game_objects(
     time: int | str = "capture",
-) -> dict:
+):
     """Retrieve game objects at a specific profiler capture time.
 
     Args:
@@ -76,7 +76,7 @@ def get_profiler_game_objects(
 @mcp.tool()
 def get_profiler_cursor_time(
     cursor: str = "capture",
-) -> dict:
+):
     """Get the current time of a profiler cursor, in milliseconds.
 
     Args:
@@ -94,7 +94,7 @@ def get_profiler_cursor_time(
 @mcp.tool()
 def get_profiler_streamed_media(
     time: int | str = "capture",
-) -> dict:
+):
     """Retrieve streaming media info at a specific profiler capture time.
 
     Equivalent to the Streams tab in the Advanced Profiler.
@@ -128,7 +128,7 @@ def get_profiler_streamed_media(
 @mcp.tool()
 def get_profiler_rtpcs(
     time: int | str = "capture",
-) -> dict:
+):
     """Retrieve active RTPCs (Game Parameters, LFOs, Envelopes, etc.) at a specific profiler capture time.
 
     Args:
@@ -151,7 +151,7 @@ def get_profiler_rtpcs(
 @mcp.tool()
 def get_profiler_performance_monitor(
     time: int | str = "capture",
-) -> dict:
+):
     """Retrieve Performance Monitor statistics at a specific profiler capture time.
 
     Returns all available counters (total voices, virtual voices, CPU %, memory, etc.).
@@ -176,7 +176,7 @@ def get_profiler_performance_monitor(
 def get_profiler_meters(
     time: int | str = "capture",
     return_fields: list[str] = ["id", "name", "path"],
-) -> dict:
+):
     """Retrieve meter data for all registered busses, aux busses, and devices.
 
     Only the Main Audio Bus is registered by default. Use ak.wwise.core.profiler.registerMeter
@@ -207,7 +207,7 @@ def get_profiler_meters(
 @mcp.tool()
 def get_profiler_cpu_usage(
     time: int | str = "capture",
-) -> dict:
+):
     """Retrieve CPU usage statistics at a specific profiler capture time.
 
     Requires "cpu" profiler data capture to be enabled (use enable_wwise_profiler_data).
@@ -240,7 +240,7 @@ def get_profiler_busses(
     bus_pipeline_id: Optional[int] = None,
     return_fields: list[str] = ["pipelineID", "objectGUID", "objectName",
                                  "gameObjectName", "volume", "voiceCount", "depth"],
-) -> dict:
+):
     """Retrieve bus instances at a specific profiler capture time.
 
     Args:
@@ -273,7 +273,7 @@ def get_profiler_audio_objects(
     return_fields: list[str] = ["audioObjectID", "busPipelineID", "busName",
                                  "gameObjectName", "audioObjectName",
                                  "channelConfig", "x", "y", "z"],
-) -> dict:
+):
     """Retrieve Audio Objects at a specific profiler capture time.
 
     Requires profiler data capture to be enabled (use enable_wwise_profiler_data with "audioObjects").
@@ -310,7 +310,7 @@ def get_profiler_voices(
     return_fields: list[str] = ["pipelineID", "objectGUID", "objectName",
                                  "gameObjectName", "baseVolume", "priority",
                                  "isVirtual", "isStarted"],
-) -> dict:
+):
     """Retrieve playing voices at a specific profiler capture time.
 
     Requires "voices" profiler data capture to be enabled.
@@ -345,7 +345,7 @@ def get_profiler_voice_contributions(
     voice_pipeline_id: int,
     time: int | str = "capture",
     busses_pipeline_id: Optional[list[int]] = None,
-) -> dict:
+):
     """Retrieve all parameters affecting a voice's volume, highpass, and lowpass along its path.
 
     Equivalent to the Voice Inspector in the Profiler. Shows the hierarchy of contributions

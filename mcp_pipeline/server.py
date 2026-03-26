@@ -26,7 +26,7 @@ def import_audio_files(
     import_operation: str = "useExisting",
     default: Optional[dict] = None,
     auto_add_to_source_control: bool = True,
-) -> dict:
+):
     """Import audio files into the Wwise project. Creates Wwise objects and links audio files to them.
 
     This function does not return errors for individual import failures — check the Wwise log for details.
@@ -36,7 +36,7 @@ def import_audio_files(
         imports:        Array of import commands. Each requires at minimum "objectPath".
                         Each entry can contain:
                           objectPath (required): Path and name of object(s) to create. Supports type prefixes.
-                              e.g. "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\<Random Container>Footsteps\\\\<Sound>Footstep_01"
+                              e.g. "\\\\Containers\\\\Default Work Unit\\\\<Random Container>Footsteps\\\\<Sound>Footstep_01"
                           audioFile:        Absolute path to the audio file (must be accessible from Wwise).
                               e.g. "C:/audio/footstep_01.wav"
                           audioFileBase64:  Base64 encoded WAV data with filename, separated by |.
@@ -65,11 +65,11 @@ def import_audio_files(
         Simple import:
             imports=[{
                 "audioFile": "C:/audio/footstep.wav",
-                "objectPath": "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\<Sound>Footstep"
+                "objectPath": "\\\\Containers\\\\Default Work Unit\\\\<Sound>Footstep"
             }]
 
         Batch import with defaults:
-            default={"importLocation": "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit"},
+            default={"importLocation": "\\\\Containers\\\\Default Work Unit"},
             imports=[
                 {"audioFile": "C:/audio/fs_01.wav", "objectPath": "<Sound>Footstep_01"},
                 {"audioFile": "C:/audio/fs_02.wav", "objectPath": "<Sound>Footstep_02"},
@@ -78,7 +78,7 @@ def import_audio_files(
         Import with hierarchy + event creation:
             imports=[{
                 "audioFile": "C:/audio/gunshot.wav",
-                "objectPath": "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\<Random Container>Weapons\\\\<Sound>Gunshot",
+                "objectPath": "\\\\Containers\\\\Default Work Unit\\\\<Random Container>Weapons\\\\<Sound>Gunshot",
                 "event": "\\\\Events\\\\Default Work Unit\\\\Play_Gunshot",
                 "@Volume": -3.0
             }]
@@ -103,7 +103,7 @@ def import_tab_delimited_file(
     import_location: Optional[str] = None,
     auto_add_to_source_control: bool = True,
     return_fields: list[str] = ["id", "name", "type", "path"],
-) -> dict:
+):
     """Import Wwise objects and audio files from a tab-delimited text file.
 
     Uses the same import processor as the Tab Delimited Import in Wwise's Audio File Importer.
@@ -120,7 +120,7 @@ def import_tab_delimited_file(
                           "useExisting"     — update if exists, create if not (default)
                           "replaceExisting" — destroy existing with same name, create new
         import_location:  Optional root object path/GUID for relative paths in the file.
-                          e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit"
+                          e.g. "\\Containers\\Default Work Unit"
         auto_add_to_source_control: Auto-add imported files to source control. Default true.
         return_fields:    Fields to return for each imported object.
                           Default: ["id", "name", "type", "path"]
@@ -147,7 +147,7 @@ def set_wwise_soundbank_inclusions(
     soundbank: str,
     operation: str,
     inclusions: list[dict],
-) -> dict:
+):
     """Modify a SoundBank's inclusion list — add, remove, or replace included objects.
 
     Args:
@@ -178,7 +178,7 @@ def set_wwise_soundbank_inclusions(
 @mcp.tool()
 def get_wwise_soundbank_inclusions(
     soundbank: str,
-) -> dict:
+):
     """Get a SoundBank's inclusion list — which objects are included and with what filter types.
 
     Args:
@@ -206,7 +206,7 @@ def generate_wwise_soundbanks(
     clear_audio_file_cache: bool = False,
     write_to_disk: bool = False,
     rebuild_init_bank: bool = False,
-) -> dict:
+):
     """Generate SoundBanks. This is a synchronous operation.
 
     If no soundbanks are specified, all user-defined SoundBanks are generated.
@@ -256,7 +256,7 @@ def generate_wwise_soundbanks(
 @mcp.tool()
 def process_wwise_soundbank_definitions(
     files: list[str],
-) -> dict:
+):
     """Import SoundBank definitions from one or more definition files.
 
     Check the WAAPI log (get_wwise_log channel "soundbankGenerate") for status messages.
@@ -274,7 +274,7 @@ def process_wwise_soundbank_definitions(
 @mcp.tool()
 def convert_wwise_external_sources(
     sources: list[dict],
-) -> dict:
+):
     """Convert external source files for the project as defined in wsources files.
 
     External Sources are audio data provided at runtime rather than baked into SoundBanks.
@@ -305,7 +305,7 @@ def convert_wwise_external_sources(
 @mcp.tool()
 def save_wwise_project(
     auto_checkout: bool = True,
-) -> dict:
+):
     """Save the current Wwise project.
 
     Args:
@@ -320,7 +320,7 @@ def save_wwise_project(
 @mcp.tool()
 def get_wwise_log(
     channel: str,
-) -> dict:
+):
     """Retrieve the latest log entries for a specific Wwise log channel.
 
     Use this after pipeline operations (import, soundbank generate, conversion) to check for

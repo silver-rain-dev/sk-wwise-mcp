@@ -23,7 +23,7 @@ def create_wwise_transport(
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
     game_object: Optional[int] = None,
-) -> dict:
+):
     """Create a transport object for previewing/auditioning a Wwise object.
 
     A transport is required before you can play, stop, or pause an object.
@@ -31,7 +31,7 @@ def create_wwise_transport(
 
     Args:
         object_path:           Project path to the object to audition.
-                               e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+                               e.g. "\\Containers\\Default Work Unit\\Footstep"
         object_guid:           GUID of the object.
         object_name_with_type: type:name. e.g. "Event:Play_Footstep", "Sound:Footstep_Walk"
         game_object:           Optional game object ID (unsigned 64-bit) to use for playback.
@@ -57,7 +57,7 @@ def create_wwise_transport(
 
 
 @mcp.tool()
-def destroy_wwise_transport(transport_id: int) -> dict:
+def destroy_wwise_transport(transport_id: int):
     """Destroy a transport object, stopping any playback associated with it.
 
     Args:
@@ -71,7 +71,7 @@ def destroy_wwise_transport(transport_id: int) -> dict:
 
 
 @mcp.tool
-def list_wwise_transports() -> dict:
+def list_wwise_transports():
     """List all active transport objects. No arguments required.
 
     Returns {"list": [...]} — array of transport objects, each containing:
@@ -88,7 +88,7 @@ def list_wwise_transports() -> dict:
 def execute_wwise_transport_action(
     action: str,
     transport_id: Optional[int] = None,
-) -> dict:
+):
     """Execute a playback action on a transport object, or all transports if none specified.
 
     Args:

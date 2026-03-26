@@ -25,7 +25,7 @@ mcp = FastMCP(name="SK Wwise MCP Command Line")
 def cli_create_new_project(
     project_path: str,
     platforms: Optional[list[str]] = None,
-) -> dict:
+):
     """Create a blank new Wwise project using WwiseConsole CLI. Does NOT require WAAPI or Wwise to be running.
 
     The project must not already exist. If the directory does not exist, it is created.
@@ -46,7 +46,7 @@ def cli_create_new_project(
 @mcp.tool()
 def cli_move_media_ids(
     project_path: str,
-) -> dict:
+):
     """Move media IDs from work units (.wwu) to a single <project-name>.mediaid file.
     Does NOT require WAAPI or Wwise to be running. Forces a save of all work units.
 
@@ -63,7 +63,7 @@ def cli_move_media_ids(
 @mcp.tool()
 def cli_move_media_ids_to_work_units(
     project_path: str,
-) -> dict:
+):
     """Move media IDs from the <project-name>.mediaid file back into individual work units (.wwu).
     Does NOT require WAAPI or Wwise to be running. Forces a save of all work units.
 
@@ -82,7 +82,7 @@ def cli_move_media_ids_to_work_units(
 @mcp.tool()
 def cli_update_media_ids(
     project_path: str,
-) -> dict:
+):
     """Update the <project-name>.mediaid file with the current project state.
     Does NOT require WAAPI or Wwise to be running. Only works if the .mediaid file already exists.
 
@@ -105,7 +105,7 @@ def cli_start_waapi_server(
     http_port: Optional[int] = None,
     allow_migration: bool = False,
     verbose: bool = False,
-) -> dict:
+):
     """Start a headless WAAPI server using WwiseConsole CLI. Does NOT require Wwise UI.
 
     Once running, other MCP servers can connect to it via WAAPI for headless automation and CI/CD.
@@ -135,7 +135,7 @@ def cli_verify_project(
     project_path: str,
     abort_on_load_issues: bool = False,
     verbose: bool = False,
-) -> dict:
+):
     """Verify a Wwise project by loading it without saving. Does NOT require WAAPI or Wwise to be running.
 
     Useful to check for load issues, warnings, or errors without modifying the project.
@@ -163,7 +163,7 @@ def cli_migrate_project(
     abort_on_load_issues: bool = False,
     no_source_control: bool = False,
     verbose: bool = False,
-) -> dict:
+):
     """Migrate and save a Wwise project to the current version using WwiseConsole CLI.
     Does NOT require WAAPI or Wwise to be running.
 
@@ -199,7 +199,7 @@ def cli_tab_delimited_import(
     continue_on_error: bool = False,
     no_source_control: bool = False,
     verbose: bool = False,
-) -> dict:
+):
     """Import a tab-delimited file to create and modify object hierarchies using WwiseConsole CLI.
     Does NOT require WAAPI or Wwise to be running.
 
@@ -246,7 +246,7 @@ def cli_convert_external_sources(
     output: Optional[str] = None,
     output_by_platform: Optional[list[list[str]]] = None,
     verbose: bool = False,
-) -> dict:
+):
     """Convert external sources using WwiseConsole CLI. Does NOT require WAAPI or Wwise to be running.
 
     External Sources are audio data provided at runtime rather than baked into SoundBanks.

@@ -30,12 +30,12 @@ def create_wwise_object(
     children: Optional[list[dict]] = None,
     properties: Optional[dict[str, Any]] = None,
     list_name: Optional[str] = None,
-) -> dict:
+):
     """Create a new Wwise object under a parent, optionally with children and properties.
 
     Args:
         parent:           The parent object. Accepts:
-                          - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit"
+                          - Project path: "\\\\Containers\\\\Default Work Unit"
                           - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                           - Qualified name (globally-unique types only):
                             "Bus:Master Audio Bus", "Event:Play_Sound_01"
@@ -85,12 +85,12 @@ def create_wwise_object(
 @mcp.tool()
 def delete_wwise_object(
     object: str,
-) -> dict:
+):
     """Delete a Wwise object (including its children).
 
     Args:
         object: The object to delete. Accepts:
-                - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                 - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                 - Qualified name (globally-unique types only):
                   "Event:Play_Sound_01", "Bus:MyBus", "Global:245489792"
@@ -109,12 +109,12 @@ def delete_wwise_object(
 def set_wwise_object_name(
     object: str,
     value: str,
-) -> dict:
+):
     """Rename a Wwise object.
 
     Args:
         object: The object to rename. Accepts:
-                - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                 - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                 - Qualified name (globally-unique types only):
                   "Event:Play_Sound_01", "Bus:MyBus", "Global:245489792"
@@ -134,12 +134,12 @@ def set_wwise_object_name(
 def set_wwise_object_notes(
     object: str,
     value: str,
-) -> dict:
+):
     """Set notes/comments on a Wwise object.
 
     Args:
         object: The object to set notes on. Accepts:
-                - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                 - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                 - Qualified name (globally-unique types only):
                   "Event:Play_Sound_01", "Bus:MyBus", "Global:245489792"
@@ -161,7 +161,7 @@ def set_wwise_object_property(
     property: str,
     value,
     platform: Optional[str] = None,
-) -> dict:
+):
     """Set a property value on a Wwise object.
 
     Use get_wwise_property_info (browse server) to discover valid properties
@@ -169,7 +169,7 @@ def set_wwise_object_property(
 
     Args:
         object:   The object to set the property on. Accepts:
-                  - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                  - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                   - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                   - Qualified name (globally-unique types only):
                     "Event:Play_Sound_01", "Bus:MyBus", "Global:245489792"
@@ -195,12 +195,12 @@ def set_wwise_object_reference(
     object: str,
     reference: str,
     value: str,
-) -> dict:
+):
     """Set a reference on a Wwise object (e.g. OutputBus, Conversion, Attenuation).
 
     Args:
         object:    The object which has the reference. Accepts:
-                   - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                   - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                    - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                    - Qualified name (globally-unique types only):
                      "Event:Play_Sound_01", "Bus:Master Audio Bus", "Global:245489792"
@@ -224,12 +224,12 @@ def move_wwise_object(
     object: str,
     parent: str,
     on_name_conflict: str = "fail",
-) -> dict:
+):
     """Move a Wwise object to a new parent.
 
     Args:
         object:           The object to move. Accepts:
-                          - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                          - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                           - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                           - Qualified name (globally-unique types only):
                             "Event:Play_Sound_01", "Bus:MyBus", "Global:245489792"
@@ -256,12 +256,12 @@ def copy_wwise_object(
     object: str,
     parent: str,
     on_name_conflict: str = "fail",
-) -> dict:
+):
     """Copy a Wwise object to a new parent.
 
     Args:
         object:           The object to copy. Accepts:
-                          - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                          - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                           - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                           - Qualified name (globally-unique types only):
                             "Event:Play_Sound_01", "Bus:MyBus", "Global:245489792"

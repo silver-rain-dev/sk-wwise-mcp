@@ -20,9 +20,9 @@ from mcp_audition.server import (
 @patch("mcp_audition.server.create_transport")
 def test_create_transport_by_path(mock_create, mock_prepare):
     mock_create.return_value = {"transport": 1}
-    result = create_wwise_transport(object_path="\\Actor-Mixer Hierarchy\\Default Work Unit\\Sound")
+    result = create_wwise_transport(object_path="\\Containers\\Default Work Unit\\Sound")
     assert result == {"transport": 1}
-    mock_create.assert_called_once_with({"object": "\\Actor-Mixer Hierarchy\\Default Work Unit\\Sound"})
+    mock_create.assert_called_once_with({"object": "\\Containers\\Default Work Unit\\Sound"})
     mock_prepare.assert_called_once_with({"transport": 1})
 
 

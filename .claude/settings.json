@@ -1,0 +1,15 @@
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python tests/eval/log_tool.py"
+          }
+        ]
+      }
+    ]
+  }
+}

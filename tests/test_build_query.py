@@ -6,8 +6,8 @@ from core.query import build_object_info_query
 
 
 def test_from_path():
-    result = build_object_info_query(from_path=["\\Actor-Mixer Hierarchy"])
-    assert result["from"] == {"path": ["\\Actor-Mixer Hierarchy"]}
+    result = build_object_info_query(from_path=["\\Containers"])
+    assert result["from"] == {"path": ["\\Containers"]}
 
 
 def test_from_type():

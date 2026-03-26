@@ -35,14 +35,14 @@ def build_object_info_query(
     select_transform: Optional[str] = None,
     where_name_contains: Optional[str] = None,
     where_type_is: Optional[list[str]] = None,
-) -> dict:
+):
     """
     Builds a WAAPI ak.wwise.core.object.get query dict from structured parameters.
     Use this to construct a query before calling execute_waapi_query.
 
     Args:
         from_path:           Root paths to query from.
-                             e.g. ["\\Actor-Mixer Hierarchy"] or ["\\Events"]
+                             e.g. ["\\Containers"] or ["\\Events"]
         from_type:           Object types to query from.
                              e.g. ["Sound", "Event", "RandomSequenceContainer"]
         return_fields:       Fields to return per object.
@@ -54,19 +54,19 @@ def build_object_info_query(
                              e.g. ["Sound", "BlendContainer"]
 
     Examples:
-        All descendants of Actor-Mixer Hierarchy:
-            from_path=["\\Actor-Mixer Hierarchy"], select_transform="descendants"
+        All descendants of Containers:
+            from_path=["\\Containers"], select_transform="descendants"
 
         All Events containing "footstep":
             from_path=["\\Events"], select_transform="descendants",
             where_name_contains="footstep", where_type_is=["Event"]
 
         All busses:
-            from_path=["\\Master-Mixer Hierarchy"], select_transform="descendants",
+            from_path=["\\Busses"], select_transform="descendants",
             where_type_is=["Bus", "AuxBus"]
 
         Children of a specific container:
-            from_path=["\\Actor-Mixer Hierarchy\\Default Work Unit\\SFX"],
+            from_path=["\\Containers\\Default Work Unit\\SFX"],
             select_transform="children"
 
     IMPORTANT — Inherited properties:
@@ -88,7 +88,7 @@ def build_object_info_query(
 
 
 @mcp.tool
-def get_wwise_object_info(query: dict) -> dict:
+def get_wwise_object_info(query: dict):
     """
     Query Wwise objects and return a summary preview.
 
@@ -122,7 +122,7 @@ def get_wwise_attenuation_curve(
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
     platform: Optional[str] = None,
-) -> dict:
+):
     """Get the curve points for an attenuation object.
 
     Args:
@@ -173,7 +173,7 @@ def get_property_and_reference_names(
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
     class_id: Optional[int] = None,
-) -> dict:
+):
     """Get all valid property and reference names for a Wwise object.
 
     Returns lists of properties (e.g. Volume, Pitch) and references (e.g. Attenuation, OutputBus)
@@ -181,7 +181,7 @@ def get_property_and_reference_names(
 
     Args:
         object_path:           Project path to the object.
-                               e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+                               e.g. "\\Containers\\Default Work Unit\\Footstep"
         object_guid:           GUID of the object.
                                e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
         object_name_with_type: Name qualified by type or short ID.
@@ -212,7 +212,7 @@ def get_wwise_property_info(
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
     class_id: Optional[int] = None,
-) -> dict:
+):
     """Get detailed info about a specific property on a Wwise object (type, min, max, default).
 
     Use get_property_and_reference_names first to discover valid property names.
@@ -222,7 +222,7 @@ def get_wwise_property_info(
         property_name:         The property name to get info for.
                                e.g. "Volume", "Pitch", "Lowpass", "IsLoopingEnabled"
         object_path:           Project path to the object.
-                               e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+                               e.g. "\\Containers\\Default Work Unit\\Footstep"
         object_guid:           GUID of the object.
                                e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
         object_name_with_type: Name qualified by type or short ID.
@@ -253,7 +253,7 @@ def diff_wwise_objects(
     target_path: Optional[str] = None,
     target_guid: Optional[str] = None,
     target_name_with_type: Optional[str] = None,
-) -> dict:
+):
     """Compare two Wwise objects and return the properties, references, and lists that differ between them.
 
     Useful for auditing ("do these two sounds have the same settings?") and Paste Properties workflows.
@@ -269,7 +269,7 @@ def diff_wwise_objects(
     Provide exactly one source identifier and one target identifier.
 
     Object identification (same for source and target):
-        - path:      "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+        - path:      "\\Containers\\Default Work Unit\\Footstep"
         - GUID:      "{aabbcc00-1122-3344-5566-77889900aabb}"
         - type:name: "Sound:Footstep_Walk", "Event:Play_Sound_01", "Global:245489792"
 
@@ -304,7 +304,7 @@ def is_wwise_property_linked(
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
-) -> dict:
+):
     """Check if a property on a Wwise object is linked (shared across all platforms) or unlinked (has platform-specific values).
 
     All three arguments (object, property, platform) are required.
@@ -314,7 +314,7 @@ def is_wwise_property_linked(
         platform:              Platform name or GUID to check against.
                                e.g. "Windows", "Mac", "iOS", "Android", "PS5", "XboxSeriesX"
                                or a platform GUID "{aabbcc00-1122-3344-5566-77889900aabb}"
-        object_path:           Project path. e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+        object_path:           Project path. e.g. "\\Containers\\Default Work Unit\\Footstep"
         object_guid:           GUID. e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
         object_name_with_type: type:name. e.g. "Sound:Footstep_Walk"
 
@@ -342,7 +342,7 @@ def is_wwise_property_enabled(
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
-) -> dict:
+):
     """Check if a property is enabled on a Wwise object for a given platform.
 
     A property can be disabled when it's overridden by a parent or not applicable
@@ -353,7 +353,7 @@ def is_wwise_property_enabled(
         platform:              Platform name or GUID.
                                e.g. "Windows", "Mac", "iOS", "Android", "PS5", "XboxSeriesX"
                                or a GUID "{aabbcc00-1122-3344-5566-77889900aabb}"
-        object_path:           Project path. e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+        object_path:           Project path. e.g. "\\Containers\\Default Work Unit\\Footstep"
         object_guid:           GUID. e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
         object_name_with_type: type:name. e.g. "Sound:Footstep_Walk"
 
@@ -375,7 +375,7 @@ def is_wwise_property_enabled(
 
 
 @mcp.tool
-def get_wwise_object_types() -> dict:
+def get_wwise_object_types():
     """Get all available Wwise object types. No arguments required.
 
     Use this to discover valid type names for queries — pass them to build_object_info_query's
@@ -394,7 +394,7 @@ def get_wwise_object_types() -> dict:
 
 
 @mcp.tool
-def get_wwise_installation_info() -> dict:
+def get_wwise_installation_info():
     """Get information about the running Wwise installation, including version, platform, and build number.
 
     Use this to verify which version of Wwise is running and confirm connectivity to the authoring tool."""
@@ -404,7 +404,7 @@ def get_wwise_installation_info() -> dict:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 @mcp.tool
-def get_wwise_project_info() -> dict:
+def get_wwise_project_info():
     """Get metadata about the currently open Wwise project, including project name, default language, and available platforms.
 
     Use this to understand the project context before performing queries or modifications."""
@@ -419,7 +419,7 @@ def get_switch_container_assignments(
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
     object_name_with_type: Optional[str] = None,
-) -> dict:
+):
     """Get the switch/state-to-child assignments for a Switch Container.
 
     Returns which child object plays for each switch or state value.
@@ -427,7 +427,7 @@ def get_switch_container_assignments(
 
     Args:
         object_path:           Project path to the Switch Container.
-                               e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep_Switch"
+                               e.g. "\\Containers\\Default Work Unit\\Footstep_Switch"
         object_guid:           GUID of the Switch Container.
         object_name_with_type: type:name. e.g. "Global:245489792"
 
@@ -452,7 +452,7 @@ def get_switch_container_assignments(
 @mcp.tool()
 def get_blend_track_assignments(
     blend_track_guid: str,
-) -> dict:
+):
     """Get the list of assignments for a Blend Track. Only accepts GUIDs.
 
     Use this to inspect which children are assigned to a Blend Track and their crossfade edge config.
@@ -476,7 +476,7 @@ def get_blend_track_assignments(
 
 
 @mcp.tool
-def ping_wwise() -> dict:
+def ping_wwise():
     """Check if WAAPI is currently available. No arguments required.
 
     Returns {"isAvailable": true} if Wwise is running and WAAPI is ready.

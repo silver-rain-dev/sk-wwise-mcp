@@ -18,6 +18,18 @@ build/
 *_output.json
 *_hierarchy.json
 
+# Logs
+*.log
+
+# Wwise project files
+*.wproj
+*.wwu
+*.akd
+*.validationcache
+.cache/
+GeneratedSoundBanks/
+Originals/
+
 # IDE
 .vscode/
 .idea/

@@ -19,7 +19,7 @@ def get_audio_source_peaks(
     time_from: Optional[float] = None,
     time_to: Optional[float] = None,
     get_cross_channel_peaks: bool = False,
-) -> dict:
+):
     """Get min/max peak pairs of an audio source, as base-64 encoded binary strings (one per channel).
     The strings are 16-bit signed int arrays with min and max values interleaved.
     If getCrossChannelPeaks is true, only one string represents peaks across all channels globally.
@@ -35,7 +35,7 @@ def get_audio_source_peaks(
         num_peaks:              Number of peak data points to return (minimum 1).
                                 More peaks = higher resolution waveform data.
         object_path:            Project path to the audio source object.
-                                e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+                                e.g. "\\Containers\\Default Work Unit\\Footstep"
         object_guid:            GUID of the audio source object.
         object_name_with_type:  type:name. e.g. "Sound:Footstep_Walk"
         time_from:              Optional start time in seconds. Must be < time_to.
@@ -81,7 +81,7 @@ def query_media_pool(
     databases: Optional[list[str]] = None,
     filters: Optional[list[dict]] = None,
     max_results: Optional[int] = None,
-) -> dict:
+):
     """Retrieve files from the Wwise Media Pool. Read-only — does not modify the project.
 
     Use this to search and inspect source audio files in the project's media databases.
@@ -134,7 +134,7 @@ def query_media_pool(
 
 
 @mcp.tool
-def get_media_pool_fields() -> dict:
+def get_media_pool_fields():
     """Get all available fields in the Media Pool. No arguments required. Read-only.
 
     Use this to discover valid field names for query_media_pool filters.

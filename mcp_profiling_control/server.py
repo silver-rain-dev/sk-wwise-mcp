@@ -22,7 +22,7 @@ mcp = FastMCP(name="SK Wwise MCP Profiling Control")
 @mcp.tool()
 def enable_wwise_profiler_data(
     data_types: list[dict],
-) -> dict:
+):
     """Specify which types of profiler data to capture. Overrides the user's profiler settings.
 
     Args:
@@ -47,7 +47,7 @@ def enable_wwise_profiler_data(
 
 
 @mcp.tool
-def stop_profiler_capture() -> dict:
+def stop_profiler_capture():
     """Stop profiler capture and return the capture end time. No arguments required.
 
     Returns {"return": int} — the Capture Time Cursor position in milliseconds."""
@@ -58,7 +58,7 @@ def stop_profiler_capture() -> dict:
 
 
 @mcp.tool
-def start_profiler_capture() -> dict:
+def start_profiler_capture():
     """Start profiler capture and return the capture start time. No arguments required.
 
     Returns {"return": int} — the Capture Time Cursor position in milliseconds."""
@@ -71,7 +71,7 @@ def start_profiler_capture() -> dict:
 @mcp.tool()
 def save_profiler_capture(
     file: str,
-) -> dict:
+):
     """Save the current profiler capture to a .prof file.
 
     Args:
@@ -86,7 +86,7 @@ def save_profiler_capture(
 @mcp.tool()
 def register_profiler_meter(
     object: str,
-) -> dict:
+):
     """Register a bus, aux bus, or device to receive meter data from the profiler.
 
     Only the Main Audio Bus is registered by default. Call this before using get_profiler_meters.
@@ -94,7 +94,7 @@ def register_profiler_meter(
 
     Args:
         object: The bus/aux bus/device to register. Accepts:
-                - path: "\\Master-Mixer Hierarchy\\Default Work Unit\\SFX_Bus"
+                - path: "\\Busses\\Default Work Unit\\SFX_Bus"
                 - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                 - type:name: "Bus:SFX_Bus", "AuxBus:Reverb\""""
     try:
@@ -106,7 +106,7 @@ def register_profiler_meter(
 @mcp.tool()
 def unregister_profiler_meter(
     object: str,
-) -> dict:
+):
     """Unregister a bus, aux bus, or device from receiving meter data.
 
     Must match a previous register_profiler_meter call.
@@ -123,7 +123,7 @@ def unregister_profiler_meter(
 def set_profiler_cursor(
     position: Optional[str] = None,
     time_ms: Optional[int] = None,
-) -> dict:
+):
     """Move the user time cursor in the profiler. Provide either position OR time_ms.
 
     Args:

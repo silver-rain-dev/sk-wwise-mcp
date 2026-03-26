@@ -7,9 +7,9 @@ from core.query import summarize_and_save
 
 
 MOCK_RESULTS = [
-    {"id": "aaa", "name": "Footstep_Walk", "type": "Sound", "path": "\\Actor-Mixer Hierarchy\\SFX\\Footstep_Walk"},
-    {"id": "bbb", "name": "Footstep_Run", "type": "Sound", "path": "\\Actor-Mixer Hierarchy\\SFX\\Footstep_Run"},
-    {"id": "ccc", "name": "SFX", "type": "RandomSequenceContainer", "path": "\\Actor-Mixer Hierarchy\\SFX"},
+    {"id": "aaa", "name": "Footstep_Walk", "type": "Sound", "path": "\\Containers\\SFX\\Footstep_Walk"},
+    {"id": "bbb", "name": "Footstep_Run", "type": "Sound", "path": "\\Containers\\SFX\\Footstep_Run"},
+    {"id": "ccc", "name": "SFX", "type": "RandomSequenceContainer", "path": "\\Containers\\SFX"},
     {"id": "ddd", "name": "Play_Footstep", "type": "Event", "path": "\\Events\\Play_Footstep"},
 ]
 

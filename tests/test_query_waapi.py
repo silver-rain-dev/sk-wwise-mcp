@@ -43,7 +43,7 @@ def test_execute_object_query_missing_return_key(mock_call):
 @patch("core.query.call")
 def test_get_object_property(mock_call):
     mock_call.return_value = {"properties": ["Volume", "Pitch"], "references": ["OutputBus"]}
-    query = {"object": "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"}
+    query = {"object": "\\Containers\\Default Work Unit\\Footstep"}
     result = get_object_property(query)
     assert result["properties"] == ["Volume", "Pitch"]
     mock_call.assert_called_once_with("ak.wwise.core.object.getPropertyAndReferenceNames", query)
@@ -68,9 +68,9 @@ def test_get_project_info(mock_call):
 # --- build_property_info_query ---
 
 def test_build_property_info_query_by_path():
-    result = build_property_info_query("Volume", object_path="\\Actor-Mixer Hierarchy\\Footstep")
+    result = build_property_info_query("Volume", object_path="\\Containers\\Footstep")
     assert result["property"] == "Volume"
-    assert result["object"] == "\\Actor-Mixer Hierarchy\\Footstep"
+    assert result["object"] == "\\Containers\\Footstep"
 
 
 def test_build_property_info_query_by_guid():
@@ -116,7 +116,7 @@ def test_get_attenuation_curve(mock_call):
 @patch("core.query.call")
 def test_get_property_info(mock_call):
     mock_call.return_value = {"type": "Real64", "default": 0.0, "min": -200.0, "max": 12.0}
-    query = {"object": "\\Actor-Mixer Hierarchy\\Footstep", "property": "Volume"}
+    query = {"object": "\\Containers\\Footstep", "property": "Volume"}
     result = get_property_info(query)
     assert result["type"] == "Real64"
     assert result["min"] == -200.0

@@ -16,7 +16,7 @@ mcp = FastMCP(name="SK Wwise MCP Remote")
 
 
 @mcp.tool
-def get_available_remote_consoles() -> dict:
+def get_available_remote_consoles():
     """Get a list of running Wwise/game instances available for remote connection. No arguments required.
 
     Use this to discover devkits, remote game instances, or other Wwise processes on the network
@@ -40,7 +40,7 @@ def connect_to_remote(
     host: str,
     app_name: Optional[str] = None,
     command_port: Optional[int] = None,
-) -> dict:
+):
     """Connect Wwise to a remote Sound Engine instance or a saved profile (.prof) file.
 
     Use get_available_remote_consoles first to discover available instances.
@@ -69,7 +69,7 @@ def connect_to_remote(
 
 
 @mcp.tool
-def get_remote_connection_status() -> dict:
+def get_remote_connection_status():
     """Get the current remote connection status. No arguments required.
 
     Returns:
@@ -83,7 +83,7 @@ def get_remote_connection_status() -> dict:
 
 
 @mcp.tool
-def disconnect_from_remote() -> dict:
+def disconnect_from_remote():
     """Disconnect Wwise from a connected remote Sound Engine instance. No arguments required."""
     try:
         return _disconnect_remote()

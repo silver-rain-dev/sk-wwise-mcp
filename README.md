@@ -1,1 +1,170 @@
-# sk-wwise-mcp
+# SK Wwise MCP
+
+A modular suite of [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) servers for [Audiokinetic Wwise](https://www.audiokinetic.com/), enabling AI agents to browse, edit, audition, profile, and build Wwise projects through the [Wwise Authoring API (WAAPI)](https://www.audiokinetic.com/library/edge/?id=waapi.html).
+
+Built for AAA production — each server is capped at 15 tools to minimize LLM tool confusion, with [Agent Skills](https://agentskills.io/) routing for multi-agent orchestration.
+
+## Features
+
+- **95 tools** across **12 MCP servers**, covering the full WAAPI surface
+- **Agent Skills spec** compliant — works with Claude Code, Cursor, VS Code Copilot, Gemini CLI, and 30+ other agent tools
+- **Thread-safe WAAPI dispatcher** with queue-based serialization and backpressure handling
+- **WwiseConsole CLI integration** for headless operations (project creation, SoundBank generation, migration)
+- **351 unit tests** with full mock coverage
+
+## Servers
+
+| Server | Tools | Description |
+|--------|-------|-------------|
+| `mcp_browse` | 14 | Read-only project inspection, object queries, property discovery |
+| `mcp_objects` | 8 | Create, delete, rename, move, copy objects; set properties and references |
+| `mcp_containers` | 9 | Switch/Blend Container assignments, State Groups, randomizer, attenuations, Game Parameter ranges |
+| `mcp_pipeline` | 9 | Audio import, SoundBank management, project save, logs |
+| `mcp_audition` | 4 | Transport-based playback preview |
+| `mcp_media_read` | 3 | Audio source peaks, Media Pool queries |
+| `mcp_ui` | 13 | Wwise UI automation — layouts, commands, selection, screenshots |
+| `mcp_profiling` | 12 | Read-only profiler data — voices, busses, CPU, meters, RTPCs |
+| `mcp_profiling_control` | 7 | Profiler capture control, meter registration, cursor navigation |
+| `mcp_remote` | 4 | Remote connection to devkits and game instances |
+| `mcp_command_line` | 9 | WwiseConsole CLI — no WAAPI needed |
+| `mcp_generic` | 3 | Fallback — discover and call any WAAPI function |
+
+## Requirements
+
+- Python 3.12+
+- Wwise 2024.1+ (with WAAPI enabled for most servers)
+- `uv` (recommended) or `pip` for dependency management
+
+### Wwise 2025.1 Hierarchy Rename
+
+Wwise 2025.1 renamed the top-level hierarchies:
+
+| Pre-2025.1 | 2025.1+ |
+|-------------|---------|
+| `\Actor-Mixer Hierarchy` | `\Containers` |
+| `\Master-Mixer Hierarchy` | `\Busses` |
+
+All paths in this project (tool descriptions, test cases, examples) use the **2025.1+ names**. If you're running Wwise 2024.x or earlier, replace `\Containers` with `\Actor-Mixer Hierarchy` and `\Busses` with `\Master-Mixer Hierarchy` in your queries.
+
+## Quick Start
+
+### 1. Install dependencies
+
+```bash
+cd sk-wwise-mcp
+uv sync
+```
+
+### 2. Configure MCP servers
+
+Add to your `.mcp.json` (project root) or `~/.claude.json` (global):
+
+```json
+{
+  "mcpServers": {
+    "sk-wwise-browse": {
+      "command": "/path/to/sk-wwise-mcp/.venv/Scripts/python.exe",
+      "args": ["/path/to/sk-wwise-mcp/mcp_browse/server.py"]
+    }
+  }
+}
+```
+
+Repeat for each server you want to enable. See `.mcp.json` in the project root for the full configuration.
+
+### 3. Start Wwise
+
+Open Wwise with a project and ensure WAAPI is enabled (Project > User Preferences > Enable Wwise Authoring API).
+
+### 4. Verify connectivity
+
+In Claude Code or your agent:
+
+```
+Ping Wwise to check if it's available
+```
+
+## Project Structure
+
+```
+sk-wwise-mcp/
+├── .agents/skills/         # Agent Skills (SKILL.md per server)
+│   ├── wwise-global/       # Global rules and workflows
+│   ├── wwise-browse/       # Browse server skill
+│   ├── wwise-objects/      # Objects server skill
+│   └── ...                 # One per server
+├── core/                   # Shared business logic
+│   ├── waapi_util.py       # WAAPI connection, dispatcher, ping
+│   ├── query.py            # Object queries, property inspection
+│   ├── objects.py          # Object CRUD operations
+│   ├── pipeline.py         # Import, SoundBank, save
+│   ├── transport.py        # Transport playback
+│   ├── media.py            # Audio peaks, Media Pool
+│   ├── profiling.py        # Profiler data retrieval
+│   ├── ui.py               # UI automation
+│   ├── wwise_cli.py        # WwiseConsole CLI wrapper
+│   └── generic_handling.py # Generic WAAPI passthrough
+├── mcp_browse/             # Read-only project inspection
+├── mcp_objects/            # Object editing
+├── mcp_containers/         # Container-specific config
+├── mcp_pipeline/           # Import and build pipeline
+├── mcp_audition/           # Transport playback
+├── mcp_media_read/         # Audio analysis
+├── mcp_ui/                 # UI automation
+├── mcp_profiling/          # Profiler data (read-only)
+├── mcp_profiling_control/  # Profiler control
+├── mcp_remote/             # Remote connection
+├── mcp_command_line/       # WwiseConsole CLI
+├── mcp_generic/            # Fallback WAAPI passthrough
+└── tests/                  # 351 unit tests
+```
+
+## Architecture
+
+### Server Separation Philosophy
+
+Servers are split by **intent and access level**, not by WAAPI namespace:
+
+- **Read-only** servers (browse, profiling, media_read) cannot modify the project
+- **Edit** servers (objects, containers) modify project state
+- **Pipeline** servers (pipeline, command_line) handle import/build operations
+- **Runtime** servers (audition, remote, profiling_control) control playback, profiling, and remote connections through the authoring tool
+
+This enables **role-based access control** — a junior sound designer can have browse + audition without access to pipeline or objects.
+
+### Thread-Safe WAAPI Dispatcher
+
+All WAAPI calls are serialized through a queue-based dispatcher (`core/waapi_util.py`), ensuring:
+
+- Thread-safe access to the WebSocket connection
+- Backpressure handling (queue max: 10,000)
+- Automatic reconnection on stale connections
+
+### Agent Skills
+
+The `.agents/skills/` directory contains [Agent Skills](https://agentskills.io/) files that route LLMs to the correct server based on the task. The `wwise-global` skill contains shared rules and workflow patterns.
+
+## Running Tests
+
+```bash
+cd sk-wwise-mcp
+uv run pytest tests/ -v
+```
+
+Tests use mocked WAAPI calls — no Wwise instance needed.
+
+## Example Prompts
+
+```
+Show me all Events in my Wwise project
+How many Sound objects are under Containers?
+Compare the settings between Footstep_Walk and Footstep_Run
+Import all .wav files from C:/audio/ into a Random Container
+Play the sound at \Containers\Default Work Unit\Footstep
+What's the CPU usage in the profiler right now?
+Create a new Wwise project at C:/MyGame/MyGame.wproj for Windows and PS5
+```
+
+## License
+
+See [LICENSE](LICENSE) for details.

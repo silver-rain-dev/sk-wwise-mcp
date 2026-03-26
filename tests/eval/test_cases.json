@@ -1,0 +1,122 @@
+[
+  {
+    "id": 1,
+    "prompt": "Ping Wwise to check if it's available",
+    "expected_tools": ["ping_wwise"],
+    "category": "browse"
+  },
+  {
+    "id": 2,
+    "prompt": "Get the Wwise installation info",
+    "expected_tools": ["get_wwise_installation_info"],
+    "category": "browse"
+  },
+  {
+    "id": 3,
+    "prompt": "Get the current project info",
+    "expected_tools": ["get_wwise_project_info"],
+    "category": "browse"
+  },
+  {
+    "id": 4,
+    "prompt": "Show me all objects in the Containers",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 5,
+    "prompt": "List all Events in my project",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 6,
+    "prompt": "Find any objects with 'Footstep' in the name",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 7,
+    "prompt": "How many Events are in my project?",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 8,
+    "prompt": "What object types are available in my Wwise project?",
+    "expected_tools": ["get_wwise_object_types"],
+    "category": "browse"
+  },
+  {
+    "id": 9,
+    "prompt": "What properties can I set on the EvalTest_SFX actor mixer?",
+    "expected_tools": ["get_property_and_reference_names"],
+    "category": "browse"
+  },
+  {
+    "id": 10,
+    "prompt": "Get the Volume property info for a Sound — what's the min/max range?",
+    "expected_tools": ["get_wwise_property_info"],
+    "category": "browse"
+  },
+  {
+    "id": 11,
+    "prompt": "Play the Play_Footstep event",
+    "expected_tools": ["create_wwise_transport", "execute_wwise_transport_action"],
+    "category": "audition"
+  },
+  {
+    "id": 12,
+    "prompt": "Stop all playback",
+    "expected_tools": ["execute_wwise_transport_action"],
+    "category": "audition"
+  },
+  {
+    "id": 13,
+    "prompt": "Show me all active transports",
+    "expected_tools": ["list_wwise_transports"],
+    "category": "audition"
+  },
+  {
+    "id": 14,
+    "prompt": "List all available WAAPI functions",
+    "expected_tools": ["get_waapi_functions"],
+    "category": "generic"
+  },
+  {
+    "id": 15,
+    "prompt": "Get the schema for ak.wwise.core.object.create",
+    "expected_tools": ["get_waapi_schema"],
+    "category": "generic"
+  },
+  {
+    "id": 16,
+    "prompt": "Create an ActorMixer called TestRouting under Default Work Unit, then delete it",
+    "expected_tools": ["create_wwise_object", "delete_wwise_object"],
+    "category": "objects"
+  },
+  {
+    "id": 17,
+    "prompt": "Set the Volume on Footstep_01 to -12",
+    "expected_tools": ["set_wwise_object_property"],
+    "category": "objects"
+  },
+  {
+    "id": 18,
+    "prompt": "Rename the Forest_Loop sound to Forest_Ambient",
+    "expected_tools": ["set_wwise_object_name"],
+    "category": "objects"
+  },
+  {
+    "id": 19,
+    "prompt": "Find all Events containing 'Play', pick the first one, and play it",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "cross-server"
+  },
+  {
+    "id": 20,
+    "prompt": "Find all Sounds under Containers, then check what properties I can set on the first one",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "cross-server"
+  }
+]

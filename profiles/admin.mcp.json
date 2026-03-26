@@ -23,6 +23,10 @@
     "sk-wwise-pipeline": {
       "command": "g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/.venv/Scripts/python.exe",
       "args": ["g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/mcp_pipeline/server.py"]
+    },
+    "sk-wwise-command-line": {
+      "command": "g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/.venv/Scripts/python.exe",
+      "args": ["g:/repos/MCP/sk-wwise-mcp/sk-wwise-mcp/mcp_command_line/server.py"]
     }
   }
 }

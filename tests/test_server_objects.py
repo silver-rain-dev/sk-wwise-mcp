@@ -24,13 +24,13 @@ from mcp_objects.server import (
 def test_create_wwise_object_basic(mock_create):
     mock_create.return_value = {"id": "{aabb}", "name": "NewSound"}
     result = create_wwise_object(
-        parent="\\Actor-Mixer Hierarchy\\Default Work Unit",
+        parent="\\Containers\\Default Work Unit",
         type="Sound",
         name="NewSound",
     )
     assert result["name"] == "NewSound"
     mock_create.assert_called_once_with(
-        parent="\\Actor-Mixer Hierarchy\\Default Work Unit",
+        parent="\\Containers\\Default Work Unit",
         type="Sound",
         name="NewSound",
         on_name_conflict="fail",
@@ -48,7 +48,7 @@ def test_create_wwise_object_with_children_and_properties(mock_create):
     children = [{"type": "Sound", "name": "Child1"}]
     props = {"Volume": -6.0}
     result = create_wwise_object(
-        parent="\\Actor-Mixer Hierarchy\\Default Work Unit",
+        parent="\\Containers\\Default Work Unit",
         type="RandomSequenceContainer",
         name="Container",
         children=children,
@@ -56,7 +56,7 @@ def test_create_wwise_object_with_children_and_properties(mock_create):
     )
     assert result["name"] == "Container"
     mock_create.assert_called_once_with(
-        parent="\\Actor-Mixer Hierarchy\\Default Work Unit",
+        parent="\\Containers\\Default Work Unit",
         type="RandomSequenceContainer",
         name="Container",
         on_name_conflict="fail",
@@ -80,9 +80,9 @@ def test_create_wwise_object_connection_error(mock_create):
 @patch("mcp_objects.server._delete_object")
 def test_delete_wwise_object_by_path(mock_delete):
     mock_delete.return_value = {}
-    result = delete_wwise_object(object="\\Actor-Mixer Hierarchy\\Default Work Unit\\MySound")
+    result = delete_wwise_object(object="\\Containers\\Default Work Unit\\MySound")
     assert result == {}
-    mock_delete.assert_called_once_with(object="\\Actor-Mixer Hierarchy\\Default Work Unit\\MySound")
+    mock_delete.assert_called_once_with(object="\\Containers\\Default Work Unit\\MySound")
 
 
 @patch("mcp_objects.server._delete_object")

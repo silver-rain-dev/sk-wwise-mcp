@@ -27,7 +27,7 @@ def set_wwise_attenuation_curve(
     use: str,
     points: list[dict],
     platform: Optional[str] = None,
-) -> dict:
+):
     """Set an attenuation curve on an attenuation object.
 
     Args:
@@ -82,7 +82,7 @@ def set_wwise_randomizer(
     min: Optional[float] = None,
     max: Optional[float] = None,
     platform: Optional[str] = None,
-) -> dict:
+):
     """Set randomizer values on a property of a Wwise object.
 
     At least one of 'enabled', 'min', or 'max' must be provided.
@@ -112,7 +112,7 @@ def set_wwise_randomizer(
 def set_wwise_state_groups(
     object: str,
     state_groups: list[str],
-) -> dict:
+):
     """Set the State Group objects associated with a Wwise object.
 
     WARNING: This replaces ALL previously associated State Groups on the object.
@@ -132,7 +132,7 @@ def set_wwise_state_groups(
 def set_wwise_state_properties(
     object: str,
     state_properties: list[str],
-) -> dict:
+):
     """Set the state properties of a Wwise object (properties controllable by States).
 
     WARNING: This replaces ALL previous state properties, including defaults.
@@ -153,7 +153,7 @@ def set_wwise_state_properties(
 def add_wwise_switch_assignment(
     child: str,
     state_or_switch: str,
-) -> dict:
+):
     """Assign a Switch Container's child to a State or Switch.
 
     Equivalent to drag-and-dropping a child onto a state in the Assigned Objects view.
@@ -173,7 +173,7 @@ def add_wwise_switch_assignment(
 def remove_wwise_switch_assignment(
     child: str,
     state_or_switch: str,
-) -> dict:
+):
     """Remove an assignment between a Switch Container's child and a State or Switch.
 
     Args:
@@ -192,7 +192,7 @@ def add_wwise_blend_assignment(
     child: str,
     index: Optional[int] = None,
     edges: Optional[list[dict]] = None,
-) -> dict:
+):
     """Add a child assignment to a Blend Track. Equivalent to drag-and-drop in the Blend Tracks Editor.
 
     Args:
@@ -231,14 +231,14 @@ def add_wwise_blend_assignment(
 def remove_wwise_blend_assignment(
     blend_track_guid: str,
     child: str,
-) -> dict:
+):
     """Remove a child assignment from a Blend Track.
 
     Args:
         blend_track_guid: The GUID of the Blend Track. Only GUIDs are accepted.
                           e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
         child:            The child object to unassign. Accepts:
-                          - Project path: "\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\MySound"
+                          - Project path: "\\\\Containers\\\\Default Work Unit\\\\MySound"
                           - GUID: "{aabbcc00-1122-3344-5566-77889900aabb}"
                           - type:name (globally-unique types only): "Event:Play_Sound_01", "Global:245489792\""""
     try:
@@ -253,7 +253,7 @@ def set_wwise_game_parameter_range(
     min: float,
     max: float,
     on_curve_update: str,
-) -> dict:
+):
     """Set the Min and Max range on a Game Parameter (RTPC).
 
     WARNING: This modifies RTPC curves and blend tracks that use this Game Parameter for their X axis.

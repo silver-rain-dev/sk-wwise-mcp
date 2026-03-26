@@ -6,8 +6,8 @@ from core.query import build_property_reference_query
 
 
 def test_by_path():
-    result = build_property_reference_query(object_path="\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep")
-    assert result["object"] == "\\Actor-Mixer Hierarchy\\Default Work Unit\\Footstep"
+    result = build_property_reference_query(object_path="\\Containers\\Default Work Unit\\Footstep")
+    assert result["object"] == "\\Containers\\Default Work Unit\\Footstep"
 
 
 def test_by_guid():
