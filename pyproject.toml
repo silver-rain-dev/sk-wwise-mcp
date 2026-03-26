@@ -8,3 +8,9 @@ dependencies = [
     "fastmcp>=3.1.1",
     "waapi-client>=0.8.1",
 ]
+
+[tool.pytest.ini_options]
+markers = [
+    "integration: requires a running Wwise headless WAAPI server (deselect with '-m \"not integration\"')",
+]
+testpaths = ["tests"]
