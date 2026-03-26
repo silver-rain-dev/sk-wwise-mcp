@@ -1,7 +1,14 @@
+import json
+import os
+import time
+import signal
 import threading
+from pathlib import Path
 from queue import Queue, Full
 
 from waapi import WaapiClient, CannotConnectToWaapiException
+
+_LOCKFILE = Path(__file__).parent.parent / ".waapi_server.lock"
 
 
 class WaapiQueueFullError(Exception):
@@ -24,8 +31,8 @@ class WaapiDispatcher:
     stays consistent across calls.
     """
 
-    def __init__(self, maxsize=10000):
-        self._client: WaapiClient | None = None
+    def __init__(self, client=None, maxsize=10000):
+        self._client = client
         self._queue: Queue = Queue(maxsize=maxsize)
         self._ready = threading.Event()
         self._connect_error: Exception | None = None
@@ -36,13 +43,14 @@ class WaapiDispatcher:
             raise self._connect_error
 
     def _run(self):
-        """Worker thread: create client, then process call queue forever."""
-        try:
-            self._client = WaapiClient()
-        except Exception as e:
-            self._connect_error = e
-            self._ready.set()
-            return
+        """Worker thread: create client (if not injected), then process queue."""
+        if self._client is None:
+            try:
+                self._client = WaapiClient()
+            except Exception as e:
+                self._connect_error = e
+                self._ready.set()
+                return
         self._ready.set()
 
         while True:
@@ -77,11 +85,96 @@ class WaapiDispatcher:
                 pass
 
 
+# ---------------------------------------------------------------------------
+# Module-level state
+# ---------------------------------------------------------------------------
+
 _dispatcher: WaapiDispatcher | None = None
 _lock = threading.Lock()
 
+# ---------------------------------------------------------------------------
+# Headless server management (file-based, cross-process)
+# ---------------------------------------------------------------------------
 
-def get_dispatcher() -> WaapiDispatcher:
+def write_server_lockfile(pid: int, project_path: str):
+    """Write a lockfile so any MCP server process can auto-restart the WAAPI server.
+
+    Called by cli_start_waapi_server after starting a headless server.
+    """
+    _LOCKFILE.write_text(json.dumps({
+        "pid": pid,
+        "project_path": project_path,
+    }), encoding="utf-8")
+
+
+def _read_server_lockfile() -> dict | None:
+    """Read the headless server lockfile. Returns None if absent or invalid."""
+    try:
+        if _LOCKFILE.exists():
+            return json.loads(_LOCKFILE.read_text(encoding="utf-8"))
+    except Exception:
+        pass
+    return None
+
+
+def _is_process_alive(pid: int) -> bool:
+    try:
+        os.kill(pid, 0)
+        return True
+    except (OSError, ProcessLookupError):
+        return False
+
+
+def _kill_process(pid: int):
+    try:
+        if os.name == "nt":
+            os.system(f"taskkill /PID {pid} /F >nul 2>&1")
+        else:
+            os.kill(pid, signal.SIGKILL)
+    except Exception:
+        pass
+
+
+def _restart_headless_server() -> bool:
+    """Restart the headless WAAPI server using info from the lockfile.
+
+    Returns True if server was restarted successfully.
+    """
+    lock = _read_server_lockfile()
+    if lock is None:
+        return False
+
+    project_path = lock.get("project_path")
+    old_pid = lock.get("pid")
+    if not project_path:
+        return False
+
+    # Kill the old process if still alive
+    if old_pid and _is_process_alive(old_pid):
+        _kill_process(old_pid)
+        time.sleep(2)
+
+    # Start a new one
+    try:
+        from core.wwise_cli import start_waapi_server
+        result = start_waapi_server(
+            project_path=project_path,
+            allow_migration=True,
+        )
+        if result.get("success"):
+            write_server_lockfile(pid=result["pid"], project_path=project_path)
+            time.sleep(5)  # Give the server time to initialize
+            return True
+    except Exception:
+        pass
+    return False
+
+
+# ---------------------------------------------------------------------------
+# Connection management
+# ---------------------------------------------------------------------------
+
+def _get_dispatcher() -> WaapiDispatcher:
     global _dispatcher
     with _lock:
         if _dispatcher is None or not _dispatcher.is_connected():
@@ -100,13 +193,54 @@ def _reconnect():
         _dispatcher = None
 
 
-def ping() -> dict:
-    """Check if WAAPI is available. Returns {"isAvailable": bool}."""
-    try:
-        return get_dispatcher().call("ak.wwise.core.ping", {})
-    except Exception:
-        return {"isAvailable": False}
+def _ensure_connection() -> WaapiDispatcher:
+    """Get a working dispatcher, reconnecting or restarting server if needed.
 
+    Strategy:
+    1. Get dispatcher — if connected, ping to verify it's alive
+    2. If ping fails, reconnect the client
+    3. If reconnect fails and we started the headless server, restart it
+    4. If nothing works, raise CannotConnectToWaapiException
+    """
+    # Step 1: try existing connection
+    try:
+        dispatcher = _get_dispatcher()
+        result = dispatcher.call("ak.wwise.core.ping", {})
+        if result and result.get("isAvailable"):
+            return dispatcher
+    except Exception:
+        pass
+
+    # Step 2: reconnect client
+    _reconnect()
+    try:
+        dispatcher = _get_dispatcher()
+        result = dispatcher.call("ak.wwise.core.ping", {})
+        if result and result.get("isAvailable"):
+            return dispatcher
+    except Exception:
+        pass
+
+    # Step 3: restart headless server if we have a lockfile
+    if _read_server_lockfile() is not None:
+        _reconnect()
+        if _restart_headless_server():
+            try:
+                dispatcher = _get_dispatcher()
+                result = dispatcher.call("ak.wwise.core.ping", {})
+                if result and result.get("isAvailable"):
+                    return dispatcher
+            except Exception:
+                pass
+
+    raise CannotConnectToWaapiException(
+        "Could not connect to WAAPI. Is Wwise running with the Authoring API enabled?"
+    )
+
+
+# ---------------------------------------------------------------------------
+# Path normalization
+# ---------------------------------------------------------------------------
 
 def _normalize_paths(d: dict) -> dict:
     """Normalize double-backslash paths to single-backslash for WAAPI.
@@ -129,15 +263,31 @@ def _normalize_paths(d: dict) -> dict:
     return result
 
 
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+def ping() -> dict:
+    """Check if WAAPI is available. Returns {"isAvailable": bool}."""
+    try:
+        dispatcher = _get_dispatcher()
+        return dispatcher.call("ak.wwise.core.ping", {})
+    except Exception:
+        return {"isAvailable": False}
+
+
 def call(uri: str, args: dict = {}, options: dict = {}) -> dict:
+    """Execute a WAAPI call with automatic connection recovery.
+
+    Pings WAAPI before calling. If the connection is dead, attempts to
+    reconnect the client. If that fails and a headless server was
+    registered, restarts the server automatically.
+    """
     args = _normalize_paths(args)
     if options:
         payload = {**args, "options": _normalize_paths(options)}
     else:
         payload = args
 
-    result = get_dispatcher().call(uri, payload)
-    if result is None:
-        _reconnect()
-        result = get_dispatcher().call(uri, payload)
-    return result
+    dispatcher = _ensure_connection()
+    return dispatcher.call(uri, payload)

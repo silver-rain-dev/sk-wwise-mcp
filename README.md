@@ -144,14 +144,67 @@ All WAAPI calls are serialized through a queue-based dispatcher (`core/waapi_uti
 
 The `.agents/skills/` directory contains [Agent Skills](https://agentskills.io/) files that route LLMs to the correct server based on the task. The `wwise-global` skill contains shared rules and workflow patterns.
 
-## Running Tests
+## Testing
+
+### Unit Tests
 
 ```bash
 cd sk-wwise-mcp
 uv run pytest tests/ -v
 ```
 
-Tests use mocked WAAPI calls — no Wwise instance needed.
+Unit tests use mocked WAAPI calls — no Wwise instance needed.
+
+### Integration / Eval Tests
+
+The `tests/eval/` directory contains an integration test suite that verifies MCP tool routing against a live Wwise project. It checks that the LLM selects the correct tools for each prompt.
+
+**39 test cases** across 6 categories: browse, audition, generic, objects, media-read, cross-server.
+
+#### Running the eval
+
+1. **Setup** — create a test project with known objects via the `eval-setup` Claude Code skill:
+   ```
+   /eval-setup
+   ```
+   This creates a headless WwiseConsole project at `tests/eval/EvalTestProject/` with:
+   - Actor-Mixer hierarchy (Sounds, Random Container, Switch Container)
+   - Events, State Groups, Switch Groups with assignments
+   - Audio files imported into all Sounds (for media/peaks tests)
+   - Attenuation ShareSet with volume curve
+   - Differing properties on Footstep_01/02 (for diff tests)
+
+2. **Run** — iterate through all test cases:
+   ```
+   /loop 30s /eval-routing
+   ```
+   Each iteration runs one case, logs which MCP tools were called, and verifies against expected tools.
+
+3. **Report** — view results:
+   ```bash
+   python tests/eval/report.py
+   ```
+
+4. **Teardown** — clean up:
+   ```
+   /eval-teardown
+   ```
+
+#### Eval architecture
+
+- `test_cases.json` — prompt + expected tools for each case
+- `verify.py` — compares actual tool calls against expected, writes `test_results.json`
+- `report.py` — generates pass/fail summary by category
+- `log_tool.py` — PostToolUse hook that logs MCP tool calls to `tool_log.jsonl`
+- `.claude/settings.json` — configures the PostToolUse hook
+
+#### Connection resilience
+
+`core/waapi_util.py` includes self-healing connection logic:
+- **Ping before call** — detects stale WAAPI connections
+- **Auto-reconnect** — creates a fresh WaapiClient if the connection is dead
+- **Auto-restart headless server** — if a `.waapi_server.lock` file exists (written by `cli_start_waapi_server`), the server is automatically restarted when unresponsive
+- **No-op for UI sessions** — if the user runs Wwise with the UI (no lockfile), connection failures surface as clear errors without attempting restart
 
 ## Example Prompts
 

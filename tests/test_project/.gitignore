@@ -1,0 +1,7 @@
+# Wwise generated/cache files
+*.validationcache
+*.wsettings
+*.akd
+*.prof
+.cache/
+GeneratedSoundBanks/

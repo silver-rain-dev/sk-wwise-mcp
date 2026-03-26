@@ -18,6 +18,16 @@ build/
 *_output.json
 *_hierarchy.json
 
+# WAAPI server lockfile
+.waapi_server.lock
+
+# Eval test project (generated, not committed)
+tests/eval/EvalTestProject/
+
+# Debug logs
+waapi_debug.log
+generic_usage.log
+
 # Logs
 *.log
 

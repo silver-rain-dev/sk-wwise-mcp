@@ -31,7 +31,9 @@ python tests/eval/report.py
 2. Read `tests/eval/test_results.json` to find which cases have already been tested
    - If the file doesn't exist, no cases have been tested yet
 3. Find the next case (by `id`) that has no entry in test_results
-4. If all cases are tested, print "All cases evaluated" and stop
+4. If this is case 1 (first case) and test_results already has entries, reset first:
+   run `python tests/eval/verify.py --reset`
+5. If all cases are tested, print "All cases evaluated" and stop
 
 5. Clear `tests/eval/tool_log.jsonl` (write empty string to it)
 

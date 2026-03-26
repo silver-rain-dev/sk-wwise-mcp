@@ -80,13 +80,13 @@
   {
     "id": 14,
     "prompt": "List all available WAAPI functions",
-    "expected_tools": ["get_waapi_functions"],
+    "expected_tools": ["list_waapi_functions"],
     "category": "generic"
   },
   {
     "id": 15,
     "prompt": "Get the schema for ak.wwise.core.object.create",
-    "expected_tools": ["get_waapi_schema"],
+    "expected_tools": ["get_waapi_function_schema"],
     "category": "generic"
   },
   {
@@ -117,6 +117,120 @@
     "id": 20,
     "prompt": "Find all Sounds under Containers, then check what properties I can set on the first one",
     "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "cross-server"
+  },
+  {
+    "id": 21,
+    "prompt": "Show me all RandomSequenceContainers under Containers",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 22,
+    "prompt": "Find all busses and aux busses in the Busses hierarchy",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 23,
+    "prompt": "List the children of the Default Work Unit in Containers",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 24,
+    "prompt": "How many Random Containers are in the project?",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 25,
+    "prompt": "How many Switch Containers are in the project?",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info"],
+    "category": "browse"
+  },
+  {
+    "id": 26,
+    "prompt": "What's the class ID for a Sound?",
+    "expected_tools": ["get_wwise_object_types"],
+    "category": "browse"
+  },
+  {
+    "id": 27,
+    "prompt": "Check which properties on Footstep_01 have platform-specific overrides",
+    "expected_tools": ["is_wwise_property_linked"],
+    "category": "browse"
+  },
+  {
+    "id": 28,
+    "prompt": "Show me the volume dry curve for the EvalTest_Atten attenuation",
+    "expected_tools": ["get_wwise_attenuation_curve"],
+    "category": "browse"
+  },
+  {
+    "id": 29,
+    "prompt": "Compare the settings between Footstep_01 and Footstep_02 and show me what's different",
+    "expected_tools": ["diff_wwise_objects"],
+    "category": "browse"
+  },
+  {
+    "id": 30,
+    "prompt": "Is the Volume property linked across platforms on Footstep_01?",
+    "expected_tools": ["is_wwise_property_linked"],
+    "category": "browse"
+  },
+  {
+    "id": 31,
+    "prompt": "Is the Lowpass property enabled on Windows for Footstep_01?",
+    "expected_tools": ["is_wwise_property_enabled"],
+    "category": "browse"
+  },
+  {
+    "id": 32,
+    "prompt": "Create a transport for the Play_Footstep event, play it, then stop it",
+    "expected_tools": ["create_wwise_transport", "execute_wwise_transport_action"],
+    "category": "audition"
+  },
+  {
+    "id": 33,
+    "prompt": "Get the waveform peaks for the first 2 seconds of Footstep_01",
+    "expected_tools": ["get_audio_source_peaks"],
+    "category": "media-read"
+  },
+  {
+    "id": 34,
+    "prompt": "Get the peak data for the trimmed region of Footstep_01",
+    "expected_tools": ["get_audio_source_peaks"],
+    "category": "media-read"
+  },
+  {
+    "id": 35,
+    "prompt": "Search the media pool for files containing 'footstep'",
+    "expected_tools": ["query_media_pool"],
+    "category": "media-read"
+  },
+  {
+    "id": 36,
+    "prompt": "What fields are available in the media pool?",
+    "expected_tools": ["get_media_pool_fields"],
+    "category": "media-read"
+  },
+  {
+    "id": 37,
+    "prompt": "Find all audio files with a sample rate of 48000",
+    "expected_tools": ["query_media_pool"],
+    "category": "media-read"
+  },
+  {
+    "id": 38,
+    "prompt": "Change every Sound's Volume to -6 dB",
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info", "set_wwise_object_property"],
+    "category": "cross-server"
+  },
+  {
+    "id": 39,
+    "prompt": "Get the project platforms, then check if Volume is linked on Footstep_01 for each platform",
+    "expected_tools": ["get_wwise_project_info", "is_wwise_property_linked"],
     "category": "cross-server"
   }
 ]

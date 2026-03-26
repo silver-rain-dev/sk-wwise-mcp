@@ -121,13 +121,18 @@ def cli_start_waapi_server(
 
     Returns:
         pid: process ID of the WAAPI server (use to stop it later)"""
-    return start_waapi_server(
+    result = start_waapi_server(
         project_path=project_path,
         wamp_port=wamp_port,
         http_port=http_port,
         allow_migration=allow_migration,
         verbose=verbose,
     )
+    # Write a lockfile so other MCP servers can auto-restart if the server dies
+    if result.get("success") and project_path:
+        from core.waapi_util import write_server_lockfile
+        write_server_lockfile(pid=result["pid"], project_path=project_path)
+    return result
 
 
 @mcp.tool()

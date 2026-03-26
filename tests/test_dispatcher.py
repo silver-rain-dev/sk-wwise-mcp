@@ -17,12 +17,18 @@ class FakeClient:
         self.delay = delay
         self.lock = threading.Lock()
 
-    def call(self, uri, args=None, **kwargs):
+    def call(self, uri, payload=None):
         if self.delay:
             time.sleep(self.delay)
         with self.lock:
-            self.calls.append((uri, args, kwargs))
-        return {"uri": uri, "args": args}
+            self.calls.append((uri, payload))
+        return {"uri": uri, "args": payload}
+
+    def is_connected(self):
+        return True
+
+    def disconnect(self):
+        pass
 
 
 class ErrorClient:
@@ -31,11 +37,17 @@ class ErrorClient:
     def call(self, *args, **kwargs):
         raise ConnectionError("WAAPI disconnected")
 
+    def is_connected(self):
+        return True
+
+    def disconnect(self):
+        pass
+
 
 def test_single_call():
     client = FakeClient()
     dispatcher = WaapiDispatcher(client)
-    result = dispatcher.call("ak.wwise.core.getInfo")
+    result = dispatcher.call("ak.wwise.core.getInfo", {})
     assert result["uri"] == "ak.wwise.core.getInfo"
     assert len(client.calls) == 1
 
@@ -47,11 +59,15 @@ def test_call_with_args():
     assert result["args"] == {"from": {"path": ["\\Events"]}}
 
 
-def test_call_with_kwargs():
+def test_call_with_options_merged():
+    """Options should be merged into payload before calling the dispatcher."""
     client = FakeClient()
     dispatcher = WaapiDispatcher(client)
-    result = dispatcher.call("ak.wwise.core.object.get", {}, options={"return": ["name"]})
-    assert client.calls[0][2] == {"options": {"return": ["name"]}}
+    # In the new API, options are merged into payload at the call() level in waapi_util,
+    # not by the dispatcher. Dispatcher just sees (uri, payload).
+    payload = {"from": {"path": ["\\Events"]}, "options": {"return": ["name"]}}
+    result = dispatcher.call("ak.wwise.core.object.get", payload)
+    assert client.calls[0][1] == payload
 
 
 def test_serializes_concurrent_calls():
@@ -62,7 +78,7 @@ def test_serializes_concurrent_calls():
 
     def make_call(i):
         try:
-            results[i] = dispatcher.call(f"call_{i}")
+            results[i] = dispatcher.call(f"call_{i}", {})
         except Exception as e:
             errors.append(e)
 
@@ -82,7 +98,7 @@ def test_preserves_order():
     dispatcher = WaapiDispatcher(client)
 
     for i in range(20):
-        dispatcher.call(f"call_{i}")
+        dispatcher.call(f"call_{i}", {})
 
     uris = [c[0] for c in client.calls]
     assert uris == [f"call_{i}" for i in range(20)]
@@ -92,25 +108,25 @@ def test_error_propagates():
     client = ErrorClient()
     dispatcher = WaapiDispatcher(client)
     try:
-        dispatcher.call("ak.wwise.core.getInfo")
+        dispatcher.call("ak.wwise.core.getInfo", {})
         assert False, "Should have raised"
     except ConnectionError as e:
         assert "WAAPI disconnected" in str(e)
 
 
 def test_error_does_not_block_subsequent_calls():
-    client = FakeClient()
     error_client = ErrorClient()
     dispatcher = WaapiDispatcher(error_client)
 
     try:
-        dispatcher.call("will_fail")
+        dispatcher.call("will_fail", {})
     except ConnectionError:
         pass
 
     # Replace client with working one and verify dispatcher still processes
-    dispatcher._client = client
-    result = dispatcher.call("ak.wwise.core.getInfo")
+    good_client = FakeClient()
+    dispatcher._client = good_client
+    result = dispatcher.call("ak.wwise.core.getInfo", {})
     assert result["uri"] == "ak.wwise.core.getInfo"
 
 
@@ -125,7 +141,7 @@ def test_queue_full_raises():
     def slow_call():
         try:
             barrier.wait()
-            dispatcher.call("slow")
+            dispatcher.call("slow", {})
         except WaapiQueueFullError:
             errors.append(True)
         except Exception:
