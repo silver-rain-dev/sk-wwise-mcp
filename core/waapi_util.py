@@ -1,7 +1,7 @@
 import json
 import os
+import subprocess
 import time
-import signal
 import threading
 from pathlib import Path
 from queue import Queue, Full
@@ -36,9 +36,13 @@ class WaapiDispatcher:
         self._queue: Queue = Queue(maxsize=maxsize)
         self._ready = threading.Event()
         self._connect_error: Exception | None = None
+        self._abandoned = False
         self._thread = threading.Thread(target=self._run, daemon=True)
         self._thread.start()
-        self._ready.wait()
+        if not self._ready.wait(timeout=15):
+            raise CannotConnectToWaapiException(
+                "Timed out waiting for WAAPI client to initialize"
+            )
         if self._connect_error:
             raise self._connect_error
 
@@ -55,6 +59,10 @@ class WaapiDispatcher:
 
         while True:
             args, result_event, result_holder = self._queue.get()
+            if args is None:
+                # Poison pill — shut down the worker
+                result_event.set()
+                break
             try:
                 uri, payload = args
                 result_holder["result"] = self._client.call(uri, payload)
@@ -62,19 +70,37 @@ class WaapiDispatcher:
                 result_holder["error"] = e
             result_event.set()
 
-    def call(self, uri: str, payload: dict):
+    def call(self, uri: str, payload: dict, timeout: float = 30):
+        if self._abandoned:
+            raise CannotConnectToWaapiException(
+                "Dispatcher was abandoned after a timed-out call"
+            )
         result_holder = {}
         event = threading.Event()
         try:
             self._queue.put(((uri, payload), event, result_holder), block=False)
         except Full:
             raise WaapiQueueFullError("WAAPI dispatch queue is full")
-        event.wait()
+        if not event.wait(timeout=timeout):
+            # The worker thread is stuck on a hung WaapiClient.call().
+            # WaapiClient.disconnect() does NOT unblock a hung call, so
+            # we mark this dispatcher as abandoned.  The module-level
+            # _reconnect() will create a fresh dispatcher with a new
+            # client and thread.  The old daemon thread will leak but
+            # won't block process exit.
+            self._abandoned = True
+            try:
+                self._client.disconnect()
+            except Exception:
+                pass
+            raise TimeoutError(f"WAAPI call timed out after {timeout} seconds")
         if "error" in result_holder:
             raise result_holder["error"]
         return result_holder["result"]
 
     def is_connected(self) -> bool:
+        if self._abandoned:
+            return False
         return self._client is not None and self._client.is_connected()
 
     def disconnect(self):
@@ -128,9 +154,12 @@ def _is_process_alive(pid: int) -> bool:
 def _kill_process(pid: int):
     try:
         if os.name == "nt":
-            os.system(f"taskkill /PID {pid} /F >nul 2>&1")
+            subprocess.call(
+                ["taskkill", "/PID", str(int(pid)), "/F"],
+                stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            )
         else:
-            os.kill(pid, signal.SIGKILL)
+            os.kill(int(pid), 9)  # SIGKILL
     except Exception:
         pass
 
@@ -276,18 +305,30 @@ def ping() -> dict:
         return {"isAvailable": False}
 
 
-def call(uri: str, args: dict = {}, options: dict = {}) -> dict:
+def call(uri: str, args: dict = None, options: dict = None, timeout: float = 30) -> dict:
     """Execute a WAAPI call with automatic connection recovery.
 
     Pings WAAPI before calling. If the connection is dead, attempts to
     reconnect the client. If that fails and a headless server was
     registered, restarts the server automatically.
+
+    Args:
+        timeout: Max seconds to wait for the WAAPI call to complete.
+                 Use higher values for long operations (import, soundbank gen).
     """
-    args = _normalize_paths(args)
+    args = _normalize_paths(args or {})
+    options = options or {}
     if options:
         payload = {**args, "options": _normalize_paths(options)}
     else:
         payload = args
 
     dispatcher = _ensure_connection()
-    return dispatcher.call(uri, payload)
+    try:
+        return dispatcher.call(uri, payload, timeout=timeout)
+    except TimeoutError:
+        # The worker thread is stuck on the hung call — tear down the
+        # dispatcher so the next call gets a fresh connection instead
+        # of queuing behind a blocked worker.
+        _reconnect()
+        raise

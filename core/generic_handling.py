@@ -1,6 +1,6 @@
 from core.waapi_util import call
 
-def get_waapi_availiable_functions():
+def get_waapi_available_functions():
     """List all available WAAPI functions."""
     return call("ak.wwise.waapi.getFunctions")
 

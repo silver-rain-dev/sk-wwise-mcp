@@ -8,7 +8,7 @@ import pytest
 sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from core.generic_handling import (
-    get_waapi_availiable_functions,
+    get_waapi_available_functions,
     get_waapi_schema,
 )
 from core.waapi_util import call
@@ -17,7 +17,7 @@ pytestmark = pytest.mark.integration
 
 
 def test_list_waapi_functions(wwise):
-    result = get_waapi_availiable_functions()
+    result = get_waapi_available_functions()
     assert "functions" in result or "return" in result or isinstance(result, dict)
 
 

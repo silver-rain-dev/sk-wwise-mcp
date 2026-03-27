@@ -46,7 +46,7 @@ def enable_wwise_profiler_data(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool
+@mcp.tool()
 def stop_profiler_capture():
     """Stop profiler capture and return the capture end time. No arguments required.
 
@@ -57,7 +57,7 @@ def stop_profiler_capture():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool
+@mcp.tool()
 def start_profiler_capture():
     """Start profiler capture and return the capture start time. No arguments required.
 

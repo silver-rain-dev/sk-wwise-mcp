@@ -66,7 +66,7 @@ def set_cursor_time(query: dict) -> dict:
     return call("ak.wwise.core.profiler.setCursorTime", query)
 
 
-def get_voices(query: dict, options: dict = {}) -> dict:
+def get_voices(query: dict, options: dict = None) -> dict:
     """Execute a WAAPI ak.wwise.core.profiler.getVoices query."""
     return call("ak.wwise.core.profiler.getVoices", query, options)
 
@@ -91,7 +91,7 @@ def get_performance_monitor(query: dict) -> dict:
     return call("ak.wwise.core.profiler.getPerformanceMonitor", query)
 
 
-def get_meters(query: dict, options: dict = {}) -> dict:
+def get_meters(query: dict, options: dict = None) -> dict:
     """Execute a WAAPI ak.wwise.core.profiler.getMeters query."""
     return call("ak.wwise.core.profiler.getMeters", query, options)
 
@@ -101,12 +101,12 @@ def get_cpu_usage(query: dict) -> dict:
     return call("ak.wwise.core.profiler.getCpuUsage", query)
 
 
-def get_busses(query: dict, options: dict = {}) -> dict:
+def get_busses(query: dict, options: dict = None) -> dict:
     """Execute a WAAPI ak.wwise.core.profiler.getBusses query."""
     return call("ak.wwise.core.profiler.getBusses", query, options)
 
 
-def get_audio_objects(query: dict, options: dict = {}) -> dict:
+def get_audio_objects(query: dict, options: dict = None) -> dict:
     """Execute a WAAPI ak.wwise.core.profiler.getAudioObjects query."""
     return call("ak.wwise.core.profiler.getAudioObjects", query, options)
 

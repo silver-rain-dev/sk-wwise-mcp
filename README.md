@@ -48,41 +48,63 @@ All paths in this project (tool descriptions, test cases, examples) use the **20
 
 ## Quick Start
 
-### 1. Install dependencies
+### 1. Clone and run setup
 
+**Windows:**
 ```bash
-cd sk-wwise-mcp
-uv sync
+git clone https://github.com/silver-rain-dev/sk-wwise-mcp
+cd sk-wwise-mcp/sk-wwise-mcp
+setup.bat
 ```
 
-### 2. Configure MCP servers
-
-Add to your `.mcp.json` (project root) or `~/.claude.json` (global):
-
-```json
-{
-  "mcpServers": {
-    "sk-wwise-browse": {
-      "command": "/path/to/sk-wwise-mcp/.venv/Scripts/python.exe",
-      "args": ["/path/to/sk-wwise-mcp/mcp_browse/server.py"]
-    }
-  }
-}
+**macOS / Linux:**
+```bash
+git clone https://github.com/silver-rain-dev/sk-wwise-mcp
+cd sk-wwise-mcp/sk-wwise-mcp
+./setup.sh
 ```
 
-Repeat for each server you want to enable. See `.mcp.json` in the project root for the full configuration.
+The setup script will:
+- Install dependencies (via `uv` or `pip`)
+- Let you choose which servers to enable
+- Generate a `.mcp.json` with the correct paths for your machine
 
-### 3. Start Wwise
+### 2. Start Wwise
 
 Open Wwise with a project and ensure WAAPI is enabled (Project > User Preferences > Enable Wwise Authoring API).
 
-### 4. Verify connectivity
+### 3. Verify connectivity
 
 In Claude Code or your agent:
 
 ```
 Ping Wwise to check if it's available
 ```
+
+<details>
+<summary><strong>Manual setup (without setup script)</strong></summary>
+
+```bash
+cd sk-wwise-mcp/sk-wwise-mcp
+uv sync   # or: python -m venv .venv && .venv/Scripts/pip install -e .
+```
+
+Then add servers to your `.mcp.json` (project root) or `~/.claude.json` (global):
+
+```json
+{
+  "mcpServers": {
+    "sk-wwise-browse": {
+      "command": "/path/to/.venv/Scripts/python.exe",
+      "args": ["/path/to/mcp_browse/server.py"]
+    }
+  }
+}
+```
+
+Use forward slashes on Windows. Repeat for each server — see `.mcp.json` in the repo root for the full list.
+
+</details>
 
 ## Project Structure
 
@@ -180,6 +202,8 @@ The `tests/eval/` directory contains an integration test suite that verifies MCP
    ```
    Each iteration runs one case, logs which MCP tools were called, and verifies against expected tools.
 
+   > **Why `/loop` instead of `/eval-run`?** The `/eval-run` skill processes all 39 cases sequentially in a single conversation. By case ~33, the accumulated tool calls, results, and verification output can exhaust the context window, causing the run to abort before finishing. `/loop` with `/eval-routing` avoids this by running one case per conversation turn, keeping context usage flat.
+
 3. **Report** — view results:
    ```bash
    python tests/eval/report.py
@@ -217,6 +241,17 @@ Play the sound at \Containers\Default Work Unit\Footstep
 What's the CPU usage in the profiler right now?
 Create a new Wwise project at C:/MyGame/MyGame.wproj for Windows and PS5
 ```
+
+## Contributing
+
+This project is not accepting direct tool contributions. Adding or modifying MCP tools affects LLM routing accuracy across the entire suite — each change requires running the eval framework against a live Wwise project, which involves LLM API costs and manual verification.
+
+If you'd like to extend the tool suite:
+
+- **Bug reports and feature requests** — please open an issue
+- **Custom tools for your team** — fork the repo and add tools to your fork. Use the eval framework (`tests/eval/`) to validate that your changes don't break routing accuracy
+
+> **Why not automate routing tests in CI?** Full routing validation requires sending prompts to an LLM to see which tools it selects — results aren't fully deterministic, and each run takes time to verify. The current eval framework runs interactively via Claude Code skills, validating routing accuracy across 39 test cases with manual review. If you're already on a Claude Max/Pro subscription, running the eval incurs no additional API costs.
 
 ## License
 

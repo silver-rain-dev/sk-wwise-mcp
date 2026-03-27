@@ -1,6 +1,6 @@
 {
   "project_path": "tests/eval/EvalTestProject/EvalTestProject.wproj",
-  "waapi_pid": 237604,
+  "waapi_pid": 102604,
   "objects": {
     "actor_mixer": "\\Containers\\Default Work Unit\\EvalTest_SFX",
     "footsteps": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps",

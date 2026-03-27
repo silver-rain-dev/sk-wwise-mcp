@@ -7,7 +7,7 @@ from core.waapi_util import call
 def build_object_info_query(
     from_path: Optional[list[str]] = None,
     from_type: Optional[list[str]] = None,
-    return_fields: list[str] = ["id", "name", "type", "path", "shortId"],
+    return_fields: list[str] = None,
     select_transform: Optional[str] = None,
     where_name_contains: Optional[str] = None,
     where_type_is: Optional[list[str]] = None,
@@ -34,6 +34,8 @@ def build_object_info_query(
     if transform:
         query["transform"] = transform
 
+    if return_fields is None:
+        return_fields = ["id", "name", "type", "path", "shortId"]
     query["options"] = {"return": return_fields}
 
     return query
@@ -79,10 +81,18 @@ def build_property_info_query(
 
 
 def execute_object_query(query: dict) -> list[dict]:
-    """Execute a WAAPI ak.wwise.core.object.get query and return the results."""
+    """Execute a WAAPI ak.wwise.core.object.get query and return the results.
+
+    Raises ValueError if WAAPI returns an error instead of results.
+    """
+    query = dict(query)  # Shallow copy to avoid mutating caller's dict
     options = query.pop("options", {})
     result = call("ak.wwise.core.object.get", query, options)
-    return result.get("return", []) if result else []
+    if result is None:
+        return []
+    if "error" in result and "return" not in result:
+        raise ValueError(f"WAAPI query error: {result['error']}")
+    return result.get("return", [])
 
 def get_switch_assignments(query: dict) -> dict:
     """Execute a WAAPI ak.wwise.core.switchContainer.getAssignments query."""

@@ -20,7 +20,7 @@ def test_import_audio(mock_call):
     mock_call.return_value = {"objects": [{"id": "a", "name": "Sound1"}]}
     result = import_audio({"imports": [{"objectPath": "\\path\\Sound"}]})
     assert len(result["objects"]) == 1
-    mock_call.assert_called_once_with("ak.wwise.core.audio.import", {"imports": [{"objectPath": "\\path\\Sound"}]})
+    mock_call.assert_called_once_with("ak.wwise.core.audio.import", {"imports": [{"objectPath": "\\path\\Sound"}]}, timeout=300)
 
 
 @patch("core.pipeline.call")
@@ -28,7 +28,7 @@ def test_import_tab_delimited(mock_call):
     mock_call.return_value = {"objects": []}
     query = {"importFile": "C:/file.tsv", "importLanguage": "English(US)", "importOperation": "useExisting"}
     result = import_tab_delimited(query, {"return": ["id"]})
-    mock_call.assert_called_once_with("ak.wwise.core.audio.importTabDelimited", query, {"return": ["id"]})
+    mock_call.assert_called_once_with("ak.wwise.core.audio.importTabDelimited", query, {"return": ["id"]}, timeout=300)
 
 
 @patch("core.pipeline.call")
@@ -52,7 +52,7 @@ def test_generate_soundbanks(mock_call):
     mock_call.return_value = {"logs": []}
     result = generate_soundbanks({"soundbanks": [{"name": "MyBank"}]})
     assert result["logs"] == []
-    mock_call.assert_called_once_with("ak.wwise.core.soundbank.generate", {"soundbanks": [{"name": "MyBank"}]})
+    mock_call.assert_called_once_with("ak.wwise.core.soundbank.generate", {"soundbanks": [{"name": "MyBank"}]}, timeout=600)
 
 
 @patch("core.pipeline.call")
@@ -67,7 +67,7 @@ def test_convert_external_sources(mock_call):
     mock_call.return_value = {}
     query = {"sources": [{"input": "C:/VO.wsources", "platform": "Windows"}]}
     convert_external_sources(query)
-    mock_call.assert_called_once_with("ak.wwise.core.soundbank.convertExternalSources", query)
+    mock_call.assert_called_once_with("ak.wwise.core.soundbank.convertExternalSources", query, timeout=300)
 
 
 @patch("core.pipeline.call")

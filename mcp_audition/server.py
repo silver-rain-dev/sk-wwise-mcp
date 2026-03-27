@@ -70,7 +70,7 @@ def destroy_wwise_transport(transport_id: int):
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool
+@mcp.tool()
 def list_wwise_transports():
     """List all active transport objects. No arguments required.
 

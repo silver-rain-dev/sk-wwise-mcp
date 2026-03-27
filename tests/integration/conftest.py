@@ -51,12 +51,17 @@ def waapi_server():
     if not _PROJECT_FILE.exists():
         pytest.skip(f"Test project not found at {_PROJECT_FILE}. Run the test project setup first.")
 
+    # Kill any existing WwiseConsole to free port 8080
+    if sys.platform == "win32":
+        subprocess.call(["taskkill", "/IM", "WwiseConsole.exe", "/F"],
+                        stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL)
+    time.sleep(2)
+
     cli = _find_wwise_console()
     proc = subprocess.Popen(
         [cli, "waapi-server", str(_PROJECT_FILE), "--allow-migration"],
-        stdout=subprocess.PIPE,
-        stderr=subprocess.PIPE,
-        text=True,
+        stdout=subprocess.DEVNULL,
+        stderr=subprocess.DEVNULL,
     )
 
     # Wait for WAAPI to become available
@@ -90,7 +95,20 @@ def wwise(waapi_server):
     """Provide a connected WaapiClient for the test session.
 
     Depends on waapi_server to ensure the server is running.
+    Cleans up any leftover IntTest* objects before yielding.
     """
     client = WaapiClient()
+
+    # Delete any leftover objects from previous failed test runs
+    leftovers = client.call("ak.wwise.core.object.get", {
+        "from": {"path": ["\\Containers\\Default Work Unit"]},
+        "transform": [
+            {"select": ["children"]},
+            {"where": ["name:matches", "^IntTest"]},
+        ],
+    }, options={"return": ["id", "name"]})
+    for obj in (leftovers or {}).get("return", []):
+        client.call("ak.wwise.core.object.delete", {"object": obj["id"]})
+
     yield client
     client.disconnect()

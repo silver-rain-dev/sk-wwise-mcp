@@ -21,8 +21,11 @@ build/
 # WAAPI server lockfile
 .waapi_server.lock
 
-# Eval test project (generated, not committed)
+# Eval test artifacts (generated, not committed)
 tests/eval/EvalTestProject/
+tests/eval/test_results.json
+tests/eval/tool_log.jsonl
+tests/eval/setup_manifest.json
 
 # Debug logs
 waapi_debug.log

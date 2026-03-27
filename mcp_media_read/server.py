@@ -133,7 +133,7 @@ def query_media_pool(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool
+@mcp.tool()
 def get_media_pool_fields():
     """Get all available fields in the Media Pool. No arguments required. Read-only.
 

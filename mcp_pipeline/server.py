@@ -93,6 +93,8 @@ def import_audio_files(
         return import_audio(query)
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+    except TimeoutError as e:
+        return {"error": f"Import timed out: {e}. The import may still be running in Wwise — check the Wwise log."}
 
 
 @mcp.tool()

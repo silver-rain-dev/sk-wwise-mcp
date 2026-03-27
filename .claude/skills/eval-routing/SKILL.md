@@ -1,12 +1,11 @@
 ---
 name: eval-routing
 description: "[TEST ONLY] Run the next MCP tool routing eval case. NOT for production use."
-disable-model-invocation: true
+user-invocable: true
 ---
 
-⚠️ THIS IS A TEST/EVAL SKILL ONLY.
-Do NOT use this for actual MCP production usage.
-This skill is for automated evaluation of tool routing decisions.
+This is a TEST/EVAL SKILL ONLY. Do NOT use for production MCP usage.
+This skill evaluates tool routing decisions one case at a time.
 
 ### Running all cases automatically
 
@@ -25,15 +24,21 @@ After the loop finishes, generate the report:
 python tests/eval/report.py
 ```
 
+### First run
+
+Before the first `/eval-routing` (or `/loop`), always reset previous results:
+
+```
+python tests/eval/verify.py --reset
+```
+
 ### Instructions (single case)
 
 1. Read `tests/eval/test_cases.json` to get all test cases
 2. Read `tests/eval/test_results.json` to find which cases have already been tested
    - If the file doesn't exist, no cases have been tested yet
 3. Find the next case (by `id`) that has no entry in test_results
-4. If this is case 1 (first case) and test_results already has entries, reset first:
-   run `python tests/eval/verify.py --reset`
-5. If all cases are tested, print "All cases evaluated" and stop
+4. If all cases are tested, print "All cases evaluated" and stop
 
 5. Clear `tests/eval/tool_log.jsonl` (write empty string to it)
 

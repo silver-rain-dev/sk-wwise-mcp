@@ -7,7 +7,7 @@ from waapi import CannotConnectToWaapiException
 from mcp_generic.server import list_waapi_functions, get_waapi_function_schema, call_waapi
 
 
-@patch("mcp_generic.server.get_waapi_availiable_functions")
+@patch("mcp_generic.server.get_waapi_available_functions")
 def test_list_waapi_functions(mock_fn):
     mock_fn.return_value = {"functions": ["ak.wwise.core.getInfo"]}
     result = list_waapi_functions()

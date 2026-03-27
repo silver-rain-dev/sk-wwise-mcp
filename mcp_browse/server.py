@@ -87,7 +87,7 @@ def build_object_info_query(
     )
 
 
-@mcp.tool
+@mcp.tool()
 def get_wwise_object_info(query: dict):
     """
     Query Wwise objects and return a summary preview.
@@ -374,7 +374,7 @@ def is_wwise_property_enabled(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool
+@mcp.tool()
 def get_wwise_object_types():
     """Get all available Wwise object types. No arguments required.
 
@@ -393,7 +393,7 @@ def get_wwise_object_types():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool
+@mcp.tool()
 def get_wwise_installation_info():
     """Get information about the running Wwise installation, including version, platform, and build number.
 
@@ -403,7 +403,7 @@ def get_wwise_installation_info():
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
-@mcp.tool
+@mcp.tool()
 def get_wwise_project_info():
     """Get metadata about the currently open Wwise project, including project name, default language, and available platforms.
 
@@ -475,7 +475,7 @@ def get_blend_track_assignments(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool
+@mcp.tool()
 def ping_wwise():
     """Check if WAAPI is currently available. No arguments required.
 

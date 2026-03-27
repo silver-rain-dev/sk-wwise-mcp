@@ -16,6 +16,9 @@ pytestmark = pytest.mark.integration
 
 
 def test_save_project(wwise):
+    # Note: we call save but this persists whatever state exists.
+    # The test project may have been mutated by other tests.
+    # This only tests that the WAAPI call succeeds, not the saved state.
     result = save_project()
     assert result is not None  # Returns {} on success
 
