@@ -15,7 +15,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Remote")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": True})
 def get_available_remote_consoles():
     """Get a list of running Wwise/game instances available for remote connection. No arguments required.
 
@@ -35,7 +35,7 @@ def get_available_remote_consoles():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": True})
 def connect_to_remote(
     host: str,
     app_name: Optional[str] = None,
@@ -68,7 +68,7 @@ def connect_to_remote(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_remote_connection_status():
     """Get the current remote connection status. No arguments required.
 
@@ -82,7 +82,7 @@ def get_remote_connection_status():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": True})
 def disconnect_from_remote():
     """Disconnect Wwise from a connected remote Sound Engine instance. No arguments required."""
     try:

@@ -19,7 +19,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Objects")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def create_wwise_object(
     parent: str,
     type: str,
@@ -82,7 +82,7 @@ def create_wwise_object(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def delete_wwise_object(
     object: str,
 ):
@@ -105,7 +105,7 @@ def delete_wwise_object(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_object_name(
     object: str,
     value: str,
@@ -130,7 +130,7 @@ def set_wwise_object_name(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_object_notes(
     object: str,
     value: str,
@@ -155,7 +155,7 @@ def set_wwise_object_notes(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_object_property(
     object: str,
     property: str,
@@ -190,7 +190,7 @@ def set_wwise_object_property(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_object_reference(
     object: str,
     reference: str,
@@ -219,7 +219,7 @@ def set_wwise_object_reference(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def move_wwise_object(
     object: str,
     parent: str,
@@ -251,7 +251,7 @@ def move_wwise_object(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def copy_wwise_object(
     object: str,
     parent: str,

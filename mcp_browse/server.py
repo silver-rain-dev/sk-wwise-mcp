@@ -27,7 +27,7 @@ from waapi import CannotConnectToWaapiException
 
 mcp = FastMCP(name = "SK Wwise MCP Browse")
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def build_object_info_query(
     from_path: Optional[list[str]] = None,
     from_type: Optional[list[str]] = None,
@@ -87,7 +87,7 @@ def build_object_info_query(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_object_info(query: dict):
     """
     Query Wwise objects and return a summary preview.
@@ -115,7 +115,7 @@ def get_wwise_object_info(query: dict):
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}  
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_attenuation_curve(
     curve_type: str,
     object_path: Optional[str] = None,
@@ -167,7 +167,7 @@ def get_wwise_attenuation_curve(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_property_and_reference_names(
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
@@ -205,7 +205,7 @@ def get_property_and_reference_names(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_property_info(
     property_name: str,
     object_path: Optional[str] = None,
@@ -245,7 +245,7 @@ def get_wwise_property_info(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def diff_wwise_objects(
     source_path: Optional[str] = None,
     source_guid: Optional[str] = None,
@@ -297,7 +297,7 @@ def diff_wwise_objects(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def is_wwise_property_linked(
     property_name: str,
     platform: str,
@@ -335,7 +335,7 @@ def is_wwise_property_linked(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def is_wwise_property_enabled(
     property_name: str,
     platform: str,
@@ -374,7 +374,7 @@ def is_wwise_property_enabled(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_object_types():
     """Get all available Wwise object types. No arguments required.
 
@@ -393,7 +393,7 @@ def get_wwise_object_types():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_installation_info():
     """Get information about the running Wwise installation, including version, platform, and build number.
 
@@ -403,7 +403,7 @@ def get_wwise_installation_info():
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_project_info():
     """Get metadata about the currently open Wwise project, including project name, default language, and available platforms.
 
@@ -414,7 +414,7 @@ def get_wwise_project_info():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_switch_container_assignments(
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
@@ -449,7 +449,7 @@ def get_switch_container_assignments(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_blend_track_assignments(
     blend_track_guid: str,
 ):
@@ -475,7 +475,7 @@ def get_blend_track_assignments(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def ping_wwise():
     """Check if WAAPI is currently available. No arguments required.
 

@@ -10,7 +10,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name = "SK Wwise MCP Media Read")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_audio_source_peaks(
     num_peaks: int,
     object_path: Optional[str] = None,
@@ -75,7 +75,7 @@ def get_audio_source_peaks(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def query_media_pool(
     search_text: Optional[str] = None,
     databases: Optional[list[str]] = None,
@@ -133,7 +133,7 @@ def query_media_pool(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_media_pool_fields():
     """Get all available fields in the Media Pool. No arguments required. Read-only.
 

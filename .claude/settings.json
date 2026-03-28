@@ -1,1 +1,15 @@
-{}
+{
+  "hooks": {
+    "PostToolUse": [
+      {
+        "matcher": "mcp__sk-wwise-*",
+        "hooks": [
+          {
+            "type": "command",
+            "command": "python tests/eval/log_tool.py"
+          }
+        ]
+      }
+    ]
+  }
+}

@@ -21,7 +21,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Command Line")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def cli_create_new_project(
     project_path: str,
     platforms: Optional[list[str]] = None,
@@ -43,7 +43,7 @@ def cli_create_new_project(
     return create_project(project_path=project_path, platforms=platforms)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def cli_move_media_ids(
     project_path: str,
 ):
@@ -60,7 +60,7 @@ def cli_move_media_ids(
     return move_media_ids_to_single_file(project_path=project_path)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def cli_move_media_ids_to_work_units(
     project_path: str,
 ):
@@ -79,7 +79,7 @@ def cli_move_media_ids_to_work_units(
     return move_media_ids_to_work_units(project_path=project_path)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def cli_update_media_ids(
     project_path: str,
 ):
@@ -98,7 +98,7 @@ def cli_update_media_ids(
     return update_media_ids_in_single_file(project_path=project_path)
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": True})
 def cli_start_waapi_server(
     project_path: Optional[str] = None,
     wamp_port: Optional[int] = None,
@@ -135,7 +135,7 @@ def cli_start_waapi_server(
     return result
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def cli_verify_project(
     project_path: str,
     abort_on_load_issues: bool = False,
@@ -162,7 +162,7 @@ def cli_verify_project(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def cli_migrate_project(
     project_path: str,
     abort_on_load_issues: bool = False,
@@ -194,7 +194,7 @@ def cli_migrate_project(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def cli_tab_delimited_import(
     project_path: str,
     import_file: str,
@@ -242,7 +242,7 @@ def cli_tab_delimited_import(
     )
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def cli_convert_external_sources(
     project_path: str,
     platforms: Optional[list[str]] = None,

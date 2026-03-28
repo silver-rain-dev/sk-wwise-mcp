@@ -17,7 +17,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Audition")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def create_wwise_transport(
     object_path: Optional[str] = None,
     object_guid: Optional[str] = None,
@@ -56,7 +56,7 @@ def create_wwise_transport(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def destroy_wwise_transport(transport_id: int):
     """Destroy a transport object, stopping any playback associated with it.
 
@@ -70,7 +70,7 @@ def destroy_wwise_transport(transport_id: int):
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def list_wwise_transports():
     """List all active transport objects. No arguments required.
 
@@ -84,7 +84,7 @@ def list_wwise_transports():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def execute_wwise_transport_action(
     action: str,
     transport_id: Optional[int] = None,

@@ -23,7 +23,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Profiling")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_loaded_media(
     time: int | str = "capture",
 ):
@@ -50,7 +50,7 @@ def get_profiler_loaded_media(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_game_objects(
     time: int | str = "capture",
 ):
@@ -73,7 +73,7 @@ def get_profiler_game_objects(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_cursor_time(
     cursor: str = "capture",
 ):
@@ -91,7 +91,7 @@ def get_profiler_cursor_time(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_streamed_media(
     time: int | str = "capture",
 ):
@@ -125,7 +125,7 @@ def get_profiler_streamed_media(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_rtpcs(
     time: int | str = "capture",
 ):
@@ -148,7 +148,7 @@ def get_profiler_rtpcs(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_performance_monitor(
     time: int | str = "capture",
 ):
@@ -172,7 +172,7 @@ def get_profiler_performance_monitor(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_meters(
     time: int | str = "capture",
     return_fields: list[str] = ["id", "name", "path"],
@@ -204,7 +204,7 @@ def get_profiler_meters(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_cpu_usage(
     time: int | str = "capture",
 ):
@@ -234,7 +234,7 @@ def get_profiler_cpu_usage(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_busses(
     time: int | str = "capture",
     bus_pipeline_id: Optional[int] = None,
@@ -266,7 +266,7 @@ def get_profiler_busses(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_audio_objects(
     time: int | str = "capture",
     bus_pipeline_id: Optional[int] = None,
@@ -303,7 +303,7 @@ def get_profiler_audio_objects(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_voices(
     time: int | str = "capture",
     voice_pipeline_id: Optional[int] = None,
@@ -340,7 +340,7 @@ def get_profiler_voices(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_profiler_voice_contributions(
     voice_pipeline_id: int,
     time: int | str = "capture",

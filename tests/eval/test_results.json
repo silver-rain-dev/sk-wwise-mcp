@@ -362,7 +362,8 @@
     ],
     "actual": [
       "get_wwise_attenuation_curve"
-    ]
+    ],
+    "expected_error": true
   },
   {
     "id": 29,
@@ -424,7 +425,8 @@
     ],
     "actual": [
       "get_audio_source_peaks"
-    ]
+    ],
+    "expected_error": true
   },
   {
     "id": 34,
@@ -436,7 +438,8 @@
     ],
     "actual": [
       "get_audio_source_peaks"
-    ]
+    ],
+    "expected_error": true
   },
   {
     "id": 35,
@@ -448,7 +451,8 @@
     ],
     "actual": [
       "query_media_pool"
-    ]
+    ],
+    "expected_error": true
   },
   {
     "id": 36,
@@ -460,7 +464,8 @@
     ],
     "actual": [
       "get_media_pool_fields"
-    ]
+    ],
+    "expected_error": true
   },
   {
     "id": 37,
@@ -472,7 +477,8 @@
     ],
     "actual": [
       "query_media_pool"
-    ]
+    ],
+    "expected_error": true
   },
   {
     "id": 38,

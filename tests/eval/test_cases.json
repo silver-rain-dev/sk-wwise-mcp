@@ -99,13 +99,15 @@
     "id": 17,
     "prompt": "Set the Volume on Footstep_01 to -12",
     "expected_tools": ["set_wwise_object_property"],
-    "category": "objects"
+    "category": "objects",
+    "cleanup": {"tool": "set_wwise_object_property", "object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_01", "property": "Volume", "restore_value": 0}
   },
   {
     "id": 18,
     "prompt": "Rename the Forest_Loop sound to Forest_Ambient",
     "expected_tools": ["set_wwise_object_name"],
-    "category": "objects"
+    "category": "objects",
+    "cleanup": {"tool": "set_wwise_object_name", "object_after": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Ambience\\Forest_Ambient", "restore_name": "Forest_Loop"}
   },
   {
     "id": 19,
@@ -165,7 +167,9 @@
     "id": 28,
     "prompt": "Show me the volume dry curve for the EvalTest_Atten attenuation",
     "expected_tools": ["get_wwise_attenuation_curve"],
-    "category": "browse"
+    "category": "browse",
+    "expected_error": true,
+    "expected_error_reason": "EvalTest_Atten attenuation does not exist in the test project"
   },
   {
     "id": 29,
@@ -195,37 +199,55 @@
     "id": 33,
     "prompt": "Get the waveform peaks for the first 2 seconds of Footstep_01",
     "expected_tools": ["get_audio_source_peaks"],
-    "category": "media-read"
+    "category": "media-read",
+    "expected_error": true,
+    "expected_error_reason": "No audio file attached to Footstep_01 in test project"
   },
   {
     "id": 34,
     "prompt": "Get the peak data for the trimmed region of Footstep_01",
     "expected_tools": ["get_audio_source_peaks"],
-    "category": "media-read"
+    "category": "media-read",
+    "expected_error": true,
+    "expected_error_reason": "No audio file attached to Footstep_01 in test project"
   },
   {
     "id": 35,
     "prompt": "Search the media pool for files containing 'footstep'",
     "expected_tools": ["query_media_pool"],
-    "category": "media-read"
+    "category": "media-read",
+    "expected_error": true,
+    "expected_error_reason": "Media pool server uses separate WAAPI connection that may not be available"
   },
   {
     "id": 36,
     "prompt": "What fields are available in the media pool?",
     "expected_tools": ["get_media_pool_fields"],
-    "category": "media-read"
+    "category": "media-read",
+    "expected_error": true,
+    "expected_error_reason": "Media pool server uses separate WAAPI connection that may not be available"
   },
   {
     "id": 37,
     "prompt": "Find all audio files with a sample rate of 48000",
     "expected_tools": ["query_media_pool"],
-    "category": "media-read"
+    "category": "media-read",
+    "expected_error": true,
+    "expected_error_reason": "Media pool server uses separate WAAPI connection that may not be available"
   },
   {
     "id": 38,
     "prompt": "Change every Sound's Volume to -6 dB",
     "expected_tools": ["build_object_info_query", "get_wwise_object_info", "set_wwise_object_property"],
-    "category": "cross-server"
+    "category": "cross-server",
+    "cleanup": {"tool": "set_wwise_object_property", "bulk_restore": [
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_01", "property": "Volume", "restore_value": 0},
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_02", "property": "Volume", "restore_value": 0},
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Weapons\\Sword_Hit", "property": "Volume", "restore_value": 0},
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Weapons\\Bow_Shot", "property": "Volume", "restore_value": 0},
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Ambience\\Forest_Loop", "property": "Volume", "restore_value": 0},
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Ambience\\Wind_Loop", "property": "Volume", "restore_value": 0}
+    ]}
   },
   {
     "id": 39,

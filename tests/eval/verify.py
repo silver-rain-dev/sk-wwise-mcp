@@ -4,13 +4,15 @@ Compares tool_log.jsonl (actual tools called) against test_cases.json
 (expected tools). Appends result to test_results.json.
 
 Usage:
-    python tests/eval/verify.py          # Verify next untested case
-    python tests/eval/verify.py --reset  # Clear all results
+    python tests/eval/verify.py                # Verify next untested case
+    python tests/eval/verify.py --reset        # Clear all results
+    python tests/eval/verify.py --check-stale  # Check if results are stale (all done), auto-reset if so
 """
 
 import json
 import re
 import sys
+from datetime import datetime, timezone
 from pathlib import Path
 
 EVAL_DIR = Path(__file__).parent
@@ -59,34 +61,6 @@ def load_tool_log() -> list[str]:
     return tools
 
 
-def find_current_case(cases: list[dict], results: list[dict]) -> dict | None:
-    """Find the most recent case that was tested (last in results)."""
-    if not results:
-        # No results yet — return first case
-        return cases[0] if cases else None
-
-    tested_ids = {r["id"] for r in results}
-    # Find the first untested case
-    for case in cases:
-        if case["id"] not in tested_ids:
-            # This is the next to test, but we just ran the previous one
-            break
-
-    # The case we just ran is the last one in results
-    last_result = results[-1]
-    last_id = last_result["id"]
-    for case in cases:
-        if case["id"] == last_id:
-            return case
-
-    # If results exist but can't find matching case, use last result's case_id
-    # to find next untested
-    for case in cases:
-        if case["id"] not in tested_ids:
-            return case
-    return None
-
-
 def get_next_untested_case(cases: list[dict], results: list[dict]) -> dict | None:
     """Find the next case that hasn't been tested yet."""
     tested_ids = {r["id"] for r in results}
@@ -94,6 +68,35 @@ def get_next_untested_case(cases: list[dict], results: list[dict]) -> dict | Non
         if case["id"] not in tested_ids:
             return case
     return None
+
+
+def is_stale(cases: list[dict], results: list[dict]) -> bool:
+    """Check if results are stale (all cases already tested)."""
+    if not results:
+        return False
+    tested_ids = {r["id"] for r in results}
+    case_ids = {c["id"] for c in cases}
+    return case_ids.issubset(tested_ids)
+
+
+def check_stale():
+    """Check for stale results and auto-reset if all cases are already done."""
+    cases = load_cases()
+    results = load_results()
+
+    if not results:
+        print("No existing results. Ready to run.")
+        return
+
+    if is_stale(cases, results):
+        mtime = datetime.fromtimestamp(
+            RESULTS_FILE.stat().st_mtime, tz=timezone.utc
+        ).strftime("%Y-%m-%d %H:%M:%S UTC")
+        print(f"Stale results detected (from {mtime}, {len(results)}/{len(cases)} complete). Auto-resetting.")
+        reset()
+    else:
+        tested = len({r["id"] for r in results})
+        print(f"Results in progress: {tested}/{len(cases)} tested. Resuming.")
 
 
 def verify():
@@ -112,6 +115,9 @@ def verify():
     missing = expected - actual_set
     passed = len(missing) == 0
 
+    # Check expected_error field
+    expected_error = case.get("expected_error", False)
+
     result = {
         "id": case["id"],
         "prompt": case["prompt"],
@@ -120,15 +126,20 @@ def verify():
         "expected": sorted(expected),
         "actual": sorted(actual_set),
     }
+    if expected_error:
+        result["expected_error"] = True
     if missing:
         result["missing"] = sorted(missing)
 
     results.append(result)
     save_results(results)
 
-    # Print result
+    # Print result with progress
+    total = len(cases)
+    tested = len(results)
     status = "PASS" if passed else "FAIL"
-    print(f"[{status}] Case {case['id']}: {case['prompt'][:60]}...")
+    error_note = " (expected error)" if expected_error else ""
+    print(f"[{status}] [{tested}/{total}] Case {case['id']}: {case['prompt'][:55]}...{error_note}")
     if not passed:
         print(f"  Expected: {sorted(expected)}")
         print(f"  Actual:   {sorted(actual_set)}")
@@ -150,5 +161,7 @@ def reset():
 if __name__ == "__main__":
     if "--reset" in sys.argv:
         reset()
+    elif "--check-stale" in sys.argv:
+        check_stale()
     else:
         verify()

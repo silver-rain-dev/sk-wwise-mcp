@@ -25,7 +25,7 @@ mcp = FastMCP(name = "SK Wwise MCP UI")
 
 _WAAPI_ERROR = {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def bring_to_foreground():
     """Bring the Wwise application window to the foreground."""
     try:
@@ -33,7 +33,7 @@ def bring_to_foreground():
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "openWorldHint": False})
 def capture_screen(rect: Optional[dict] = None):
     """Capture a screenshot of the Wwise UI.
 
@@ -45,7 +45,7 @@ def capture_screen(rect: Optional[dict] = None):
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_selected_objects(return_fields: list[str] = ["id", "name", "type", "path"]):
     """Get the currently selected objects in the Wwise UI.
 
@@ -57,7 +57,7 @@ def get_selected_objects(return_fields: list[str] = ["id", "name", "type", "path
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_selected_files():
     """Get the files currently selected in the Wwise UI (e.g. in the Source Editor)."""
     try:
@@ -65,7 +65,7 @@ def get_selected_files():
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def execute_command(command: str, objects: Optional[list[str]] = None, platforms: Optional[list[str]] = None, languages: Optional[list[str]] = None):
     """Execute a Wwise UI command by name.
 
@@ -80,7 +80,7 @@ def execute_command(command: str, objects: Optional[list[str]] = None, platforms
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_commands():
     """Get the list of all available UI commands in Wwise."""
     try:
@@ -88,7 +88,7 @@ def get_commands():
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_current_layout_name():
     """Get the name of the current Wwise UI layout."""
     try:
@@ -96,7 +96,7 @@ def get_current_layout_name():
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_layout_names():
     """Get all available Wwise UI layout names."""
     try:
@@ -104,7 +104,7 @@ def get_layout_names():
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def switch_layout(layout_name: str):
     """Switch the Wwise UI to a different layout.
 
@@ -116,7 +116,7 @@ def switch_layout(layout_name: str):
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_view_types():
     """Get all available view types in the Wwise UI (e.g. 'Property Editor', 'Transport Control')."""
     try:
@@ -124,7 +124,7 @@ def get_view_types():
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_view_instances():
     """Get all currently open view instances in the Wwise UI."""
     try:
@@ -132,7 +132,7 @@ def get_view_instances():
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def open_project(path: str):
     """Open a Wwise project file.
 
@@ -144,7 +144,7 @@ def open_project(path: str):
     except CannotConnectToWaapiException:
         return _WAAPI_ERROR
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def close_project():
     """Close the currently open Wwise project."""
     try:

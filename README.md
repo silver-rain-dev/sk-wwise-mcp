@@ -2,7 +2,7 @@
 
 A modular suite of [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) servers for [Audiokinetic Wwise](https://www.audiokinetic.com/), enabling AI agents to browse, edit, audition, profile, and build Wwise projects through the [Wwise Authoring API (WAAPI)](https://www.audiokinetic.com/library/edge/?id=waapi.html).
 
-Built for AAA production — each server is capped at 15 tools to minimize LLM tool confusion, with [Agent Skills](https://agentskills.io/) routing for multi-agent orchestration.
+Each server is capped at 15 tools to minimize LLM tool confusion, with [Agent Skills](https://agentskills.io/) routing for multi-agent orchestration.
 
 ## Features
 
@@ -10,7 +10,7 @@ Built for AAA production — each server is capped at 15 tools to minimize LLM t
 - **Agent Skills spec** compliant — works with Claude Code, Cursor, VS Code Copilot, Gemini CLI, and 30+ other agent tools
 - **Thread-safe WAAPI dispatcher** with queue-based serialization and backpressure handling
 - **WwiseConsole CLI integration** for headless operations (project creation, SoundBank generation, migration)
-- **351 unit tests** with full mock coverage
+- **351 unit tests** (mocked WAAPI) + **39 integration tests** (live Wwise)
 
 ## Servers
 
@@ -138,21 +138,61 @@ sk-wwise-mcp/
 ├── mcp_remote/             # Remote connection
 ├── mcp_command_line/       # WwiseConsole CLI
 ├── mcp_generic/            # Fallback WAAPI passthrough
-└── tests/                  # 351 unit tests
+└── tests/                  # 351 unit + 39 integration tests
 ```
+
+## Philosophy
+
+This project is an **exploration** of how AI agents can assist with large-scale Wwise production work — the tedious, repetitive tasks that eat hours (bulk renaming, auditing property consistency across hundreds of objects, generating SoundBanks, diffing configurations) — while **minimizing the risk of unwanted changes** to the project.
+
+The core tension: AI is most useful when it can take action, but Wwise projects are complex and a wrong edit can silently break audio behavior in ways that surface much later. This project's architecture is designed around that tension — let the agent help with the heavy lifting, but make it structurally difficult for it to do things it shouldn't.
+
+This is not a finished product. It's a working experiment in finding the right boundary between AI assistance and human control for audio middleware.
+
+### Why no Sound Engine (`ak.soundengine`) coverage
+
+WAAPI exposes both **authoring** functions (`ak.wwise.*`) and **sound engine** functions (`ak.soundengine.*`). This project deliberately covers only the authoring side.
+
+The sound engine API triggers real-time audio behavior — posting events, setting RTPCs, setting states and switches, seeking — the same operations that the game runtime performs. Exposing these to an AI agent creates a debugging nightmare: if something sounds wrong during a session, was it the game posting an event, or the LLM? With authoring operations the scope is clear — the agent changed a property in the project, and the change is visible in the UI and saved to the work unit. Sound engine calls leave no such trail.
+
+Sound engine interaction belongs in a more controlled environment: game-side tooling, automated test harnesses, or direct scripting where every call is logged and traceable. Not behind an AI agent whose decision-making is opaque by nature.
+
+The one exception is **transport-based playback** (`mcp_audition`), which uses `ak.wwise.core.transport.*` — an authoring API that previews sounds within the Wwise editor without affecting game-side state.
 
 ## Architecture
 
 ### Server Separation Philosophy
 
+Most MCP projects expose one server with all tools. This project deliberately splits into 12 servers for three reasons:
+
+#### Role-based access control
+
+Not every user needs every tool. By separating servers along permission boundaries, teams can grant access by role:
+
+| Role                     | Servers                                  | Can do                                                       |
+| ------------------------ | ---------------------------------------- | ------------------------------------------------------------ |
+| Sound designer (junior)  | browse, audition, media_read             | Explore the project, preview sounds, inspect audio           |
+| Sound designer (senior)  | + objects, containers                    | Create/edit objects, configure containers                    |
+| Build engineer           | + pipeline, command_line                 | Import audio, generate SoundBanks, run CLI operations        |
+| QA / profiling           | + profiling, profiling_control, remote   | Profile performance, connect to devkits                      |
+| Admin                    | all servers                              | Full access including UI automation and generic WAAPI        |
+
+An agent with only `browse` enabled physically cannot delete objects or overwrite SoundBank settings — the tools don't exist in its context. This is a stronger guarantee than relying on prompt instructions like "don't modify anything."
+
+#### Read/write separation
+
 Servers are split by **intent and access level**, not by WAAPI namespace:
 
-- **Read-only** servers (browse, profiling, media_read) cannot modify the project
-- **Edit** servers (objects, containers) modify project state
-- **Pipeline** servers (pipeline, command_line) handle import/build operations
-- **Runtime** servers (audition, remote, profiling_control) control playback, profiling, and remote connections through the authoring tool
+- **Read-only** servers (`browse`, `profiling`, `media_read`) cannot modify the project. Safe to give to any agent or user without risk.
+- **Edit** servers (`objects`, `containers`) modify project state — object creation, deletion, property changes.
+- **Pipeline** servers (`pipeline`, `command_line`) handle import/build operations that affect files on disk.
+- **Runtime** servers (`audition`, `remote`, `profiling_control`) control playback, profiling, and remote connections through the authoring tool.
 
-This enables **role-based access control** — a junior sound designer can have browse + audition without access to pipeline or objects.
+This means you can build a "read-only assistant" by enabling only the read servers, or a "full authoring agent" by enabling everything. The separation is enforced at the transport level — there's no way to accidentally call a write tool from a read-only server.
+
+#### LLM tool routing accuracy
+
+LLMs get worse at selecting the right tool as the tool count grows. By capping each server at ~15 tools, the model sees a focused set of tools relevant to the task. Agent Skills (`.agents/skills/`) route the LLM to the correct server based on the user's intent, keeping the active tool set small even though 95 tools exist across the suite.
 
 ### Thread-Safe WAAPI Dispatcher
 
@@ -196,13 +236,20 @@ The `tests/eval/` directory contains an integration test suite that verifies MCP
    - Attenuation ShareSet with volume curve
    - Differing properties on Footstep_01/02 (for diff tests)
 
-2. **Run** — iterate through all test cases:
+2. **Run** — iterate through all test cases using either skill:
+
+   **`/eval-batch`** — runs up to 10 cases per invocation (recommended):
+   ```
+   /loop 60s /eval-batch
+   ```
+   Finishes all 39 cases in ~4 iterations. Each invocation picks up where the last left off.
+
+   **`/eval-routing`** — runs 1 case per invocation (fine-grained):
    ```
    /loop 30s /eval-routing
    ```
-   Each iteration runs one case, logs which MCP tools were called, and verifies against expected tools.
 
-   > **Why `/loop` instead of `/eval-run`?** The `/eval-run` skill processes all 39 cases sequentially in a single conversation. By case ~33, the accumulated tool calls, results, and verification output can exhaust the context window, causing the run to abort before finishing. `/loop` with `/eval-routing` avoids this by running one case per conversation turn, keeping context usage flat.
+   Both log which MCP tools were called and verify against expected tools.
 
 3. **Report** — view results:
    ```bash

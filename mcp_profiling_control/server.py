@@ -19,7 +19,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Profiling Control")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def enable_wwise_profiler_data(
     data_types: list[dict],
 ):
@@ -46,7 +46,7 @@ def enable_wwise_profiler_data(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def stop_profiler_capture():
     """Stop profiler capture and return the capture end time. No arguments required.
 
@@ -57,7 +57,7 @@ def stop_profiler_capture():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def start_profiler_capture():
     """Start profiler capture and return the capture start time. No arguments required.
 
@@ -68,7 +68,7 @@ def start_profiler_capture():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def save_profiler_capture(
     file: str,
 ):
@@ -83,7 +83,7 @@ def save_profiler_capture(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def register_profiler_meter(
     object: str,
 ):
@@ -103,7 +103,7 @@ def register_profiler_meter(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def unregister_profiler_meter(
     object: str,
 ):
@@ -119,7 +119,7 @@ def unregister_profiler_meter(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_profiler_cursor(
     position: Optional[str] = None,
     time_ms: Optional[int] = None,

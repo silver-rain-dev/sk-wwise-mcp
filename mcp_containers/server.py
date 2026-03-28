@@ -20,7 +20,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Containers")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_attenuation_curve(
     object: str,
     curve_type: str,
@@ -74,7 +74,7 @@ def set_wwise_attenuation_curve(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_randomizer(
     object: str,
     property: str,
@@ -108,7 +108,7 @@ def set_wwise_randomizer(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def set_wwise_state_groups(
     object: str,
     state_groups: list[str],
@@ -128,7 +128,7 @@ def set_wwise_state_groups(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": False})
 def set_wwise_state_properties(
     object: str,
     state_properties: list[str],
@@ -149,7 +149,7 @@ def set_wwise_state_properties(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def add_wwise_switch_assignment(
     child: str,
     state_or_switch: str,
@@ -169,7 +169,7 @@ def add_wwise_switch_assignment(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def remove_wwise_switch_assignment(
     child: str,
     state_or_switch: str,
@@ -186,7 +186,7 @@ def remove_wwise_switch_assignment(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def add_wwise_blend_assignment(
     blend_track_guid: str,
     child: str,
@@ -227,7 +227,7 @@ def add_wwise_blend_assignment(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def remove_wwise_blend_assignment(
     blend_track_guid: str,
     child: str,
@@ -247,7 +247,7 @@ def remove_wwise_blend_assignment(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_game_parameter_range(
     object: str,
     min: float,

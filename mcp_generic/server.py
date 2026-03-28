@@ -11,7 +11,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Generic")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def list_waapi_functions():
     """List all available WAAPI functions."""
     try:
@@ -20,7 +20,7 @@ def list_waapi_functions():
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_waapi_function_schema(function_name: str):
     """Get the argument/option schema for a WAAPI function."""
     try:
@@ -29,7 +29,7 @@ def get_waapi_function_schema(function_name: str):
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": True, "openWorldHint": True})
 def call_waapi(function_name, args: dict = None, options: dict = None):
     """Execute any WAAPI function with the given args and options."""
     try:

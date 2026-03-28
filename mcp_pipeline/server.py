@@ -20,7 +20,7 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Pipeline")
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def import_audio_files(
     imports: list[dict],
     import_operation: str = "useExisting",
@@ -97,7 +97,7 @@ def import_audio_files(
         return {"error": f"Import timed out: {e}. The import may still be running in Wwise — check the Wwise log."}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def import_tab_delimited_file(
     import_file: str,
     import_language: str,
@@ -144,7 +144,7 @@ def import_tab_delimited_file(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def set_wwise_soundbank_inclusions(
     soundbank: str,
     operation: str,
@@ -177,7 +177,7 @@ def set_wwise_soundbank_inclusions(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_soundbank_inclusions(
     soundbank: str,
 ):
@@ -198,7 +198,7 @@ def get_wwise_soundbank_inclusions(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def generate_wwise_soundbanks(
     soundbanks: Optional[list[dict]] = None,
     platforms: Optional[list[str]] = None,
@@ -255,7 +255,7 @@ def generate_wwise_soundbanks(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def process_wwise_soundbank_definitions(
     files: list[str],
 ):
@@ -273,7 +273,7 @@ def process_wwise_soundbank_definitions(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def convert_wwise_external_sources(
     sources: list[dict],
 ):
@@ -304,7 +304,7 @@ def convert_wwise_external_sources(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def save_wwise_project(
     auto_checkout: bool = True,
 ):
@@ -319,7 +319,7 @@ def save_wwise_project(
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
-@mcp.tool()
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
 def get_wwise_log(
     channel: str,
 ):

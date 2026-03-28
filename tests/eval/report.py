@@ -57,6 +57,15 @@ def main():
             print(f"  {cat:20s}  {counts['pass']}/{total_cat} ({rate:.0f}%)")
         print()
 
+    # Expected-error cases
+    error_cases = [r for r in results if r.get("expected_error")]
+    if error_cases:
+        print("Expected-error cases (routed correctly, tool error expected):")
+        for r in error_cases:
+            status = "PASS" if r["pass"] else "FAIL"
+            print(f"  [{status}] Case {r['id']}: {r['prompt'][:50]}...")
+        print()
+
     # Failures detail
     failures = [r for r in results if not r["pass"]]
     if failures:
