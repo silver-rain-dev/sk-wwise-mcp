@@ -1,5 +1,7 @@
 # SK Wwise MCP
 
+[![Documentation](https://img.shields.io/badge/docs-silver--rain--dev.github.io-blue)](https://silver-rain-dev.github.io/sk-mcp-documentation-site/)
+
 A modular suite of [MCP (Model Context Protocol)](https://modelcontextprotocol.io/) servers for [Audiokinetic Wwise](https://www.audiokinetic.com/), enabling AI agents to browse, edit, audition, profile, and build Wwise projects through the [Wwise Authoring API (WAAPI)](https://www.audiokinetic.com/library/edge/?id=waapi.html).
 
 Each server is capped at 15 tools to minimize LLM tool confusion, with [Agent Skills](https://agentskills.io/) routing for multi-agent orchestration.

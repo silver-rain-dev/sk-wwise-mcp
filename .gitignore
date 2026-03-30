@@ -46,6 +46,8 @@ Originals/
 
 # Local test files
 pokemon-rgy-wwise-plan.md
+gen_music_imports.py
+music_imports.json
 
 
 # IDE
