@@ -6,20 +6,20 @@ Each server is capped at 15 tools to minimize LLM tool confusion, with [Agent Sk
 
 ## Features
 
-- **95 tools** across **12 MCP servers**, covering the full WAAPI surface
+- **97 tools** across **12 MCP servers**, covering the full WAAPI surface
 - **Agent Skills spec** compliant — works with Claude Code, Cursor, VS Code Copilot, Gemini CLI, and 30+ other agent tools
 - **Thread-safe WAAPI dispatcher** with queue-based serialization and backpressure handling
 - **WwiseConsole CLI integration** for headless operations (project creation, SoundBank generation, migration)
-- **351 unit tests** (mocked WAAPI) + **39 integration tests** (live Wwise)
+- **450 unit tests** (mocked WAAPI) + **44 integration tests** (live Wwise)
 
 ## Servers
 
 | Server | Tools | Description |
 |--------|-------|-------------|
 | `mcp_browse` | 14 | Read-only project inspection, object queries, property discovery |
-| `mcp_objects` | 8 | Create, delete, rename, move, copy objects; set properties and references |
+| `mcp_objects` | 7 | Create, delete, rename, move, copy objects; set properties and references |
 | `mcp_containers` | 9 | Switch/Blend Container assignments, State Groups, randomizer, attenuations, Game Parameter ranges |
-| `mcp_pipeline` | 9 | Audio import, SoundBank management, project save, logs |
+| `mcp_pipeline` | 12 | Audio import/conversion, SoundBank management, tab-delimited generation, project save, logs |
 | `mcp_audition` | 4 | Transport-based playback preview |
 | `mcp_media_read` | 3 | Audio source peaks, Media Pool queries |
 | `mcp_ui` | 13 | Wwise UI automation — layouts, commands, selection, screenshots |
@@ -125,6 +125,7 @@ sk-wwise-mcp/
 │   ├── profiling.py        # Profiler data retrieval
 │   ├── ui.py               # UI automation
 │   ├── wwise_cli.py        # WwiseConsole CLI wrapper
+│   ├── audio_convert.py    # Non-WAV to WAV conversion (ffmpeg)
 │   └── generic_handling.py # Generic WAAPI passthrough
 ├── mcp_browse/             # Read-only project inspection
 ├── mcp_objects/            # Object editing
@@ -138,7 +139,7 @@ sk-wwise-mcp/
 ├── mcp_remote/             # Remote connection
 ├── mcp_command_line/       # WwiseConsole CLI
 ├── mcp_generic/            # Fallback WAAPI passthrough
-└── tests/                  # 351 unit + 39 integration tests
+└── tests/                  # 450 unit + 44 integration tests
 ```
 
 ## Philosophy

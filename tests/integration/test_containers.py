@@ -11,6 +11,7 @@ from core.objects import (
     create_object,
     delete_object,
     switch_container_add_assignment,
+    switch_container_add_assignments,
     switch_container_remove_assignment,
     set_attenuation_curve,
     set_state_groups,
@@ -71,6 +72,30 @@ def test_set_attenuation_curve(wwise):
         ],
     )
     assert result is not None
+
+
+def test_switch_assignment_batch(wwise):
+    """Test adding multiple switch assignments in one batch."""
+    obj1 = create_object(
+        parent="\\Containers\\Default Work Unit\\TestSFX\\Weapons",
+        type="Sound", name="IntTestBatchSwitch1",
+        on_name_conflict="replace",
+    )
+    obj2 = create_object(
+        parent="\\Containers\\Default Work Unit\\TestSFX\\Weapons",
+        type="Sound", name="IntTestBatchSwitch2",
+        on_name_conflict="replace",
+    )
+
+    results = switch_container_add_assignments([
+        {"child": obj1["id"], "state_or_switch": "\\Switches\\Default Work Unit\\Surface\\Wood"},
+        {"child": obj2["id"], "state_or_switch": "\\Switches\\Default Work Unit\\Surface\\Wood"},
+    ])
+    assert len(results) == 2
+
+    # Cleanup
+    delete_object(object=obj1["id"])
+    delete_object(object=obj2["id"])
 
 
 def test_set_state_groups(wwise):

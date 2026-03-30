@@ -9,8 +9,8 @@ from mcp_containers.server import (
     set_wwise_randomizer,
     set_wwise_state_groups,
     set_wwise_state_properties,
-    add_wwise_switch_assignment,
-    remove_wwise_switch_assignment,
+    add_wwise_switch_assignments,
+    remove_wwise_switch_assignments,
     add_wwise_blend_assignment,
     remove_wwise_blend_assignment,
     set_wwise_game_parameter_range,
@@ -83,33 +83,74 @@ def test_set_state_properties_error(mock):
     assert "error" in result
 
 
-# --- switch assignment add ---
+# --- switch assignment add (batch) ---
 
-@patch("mcp_containers.server._switch_container_add_assignment")
-def test_add_switch_assignment_success(mock):
-    mock.return_value = {}
-    result = add_wwise_switch_assignment(child="\\path\\Child", state_or_switch="\\path\\Switch")
-    assert "error" not in result
+@patch("mcp_containers.server._switch_container_add_assignments")
+def test_add_switch_assignments_single(mock):
+    mock.return_value = [{}]
+    result = add_wwise_switch_assignments(
+        assignments=[{"child": "\\path\\Child", "state_or_switch": "\\path\\Switch"}]
+    )
+    assert len(result) == 1
+    assert "error" not in result[0]
 
 
-@patch("mcp_containers.server._switch_container_add_assignment", side_effect=CannotConnectToWaapiException)
-def test_add_switch_assignment_error(mock):
-    result = add_wwise_switch_assignment(child="\\test", state_or_switch="\\test")
+@patch("mcp_containers.server._switch_container_add_assignments")
+def test_add_switch_assignments_multiple(mock):
+    mock.return_value = [{}, {}]
+    result = add_wwise_switch_assignments(
+        assignments=[
+            {"child": "\\path\\Child1", "state_or_switch": "\\path\\Switch1"},
+            {"child": "\\path\\Child2", "state_or_switch": "\\path\\Switch2"},
+        ]
+    )
+    assert len(result) == 2
+
+
+@patch("mcp_containers.server._switch_container_add_assignments")
+def test_add_switch_assignments_with_container(mock):
+    mock.return_value = [{}, {}]
+    result = add_wwise_switch_assignments(
+        assignments=[
+            {"child": "Absorb", "state_or_switch": "Absorb"},
+            {"child": "Acid", "state_or_switch": "Acid"},
+        ],
+        container="\\Actor-Mixer Hierarchy\\Default Work Unit\\SFX\\SFX_Moves",
+    )
+    assert len(result) == 2
+    mock.assert_called_once_with(
+        assignments=[
+            {"child": "Absorb", "state_or_switch": "Absorb"},
+            {"child": "Acid", "state_or_switch": "Acid"},
+        ],
+        container="\\Actor-Mixer Hierarchy\\Default Work Unit\\SFX\\SFX_Moves",
+    )
+
+
+@patch("mcp_containers.server._switch_container_add_assignments", side_effect=CannotConnectToWaapiException)
+def test_add_switch_assignments_error(mock):
+    result = add_wwise_switch_assignments(
+        assignments=[{"child": "\\test", "state_or_switch": "\\test"}]
+    )
     assert "error" in result
 
 
-# --- switch assignment remove ---
+# --- switch assignment remove (batch) ---
 
-@patch("mcp_containers.server._switch_container_remove_assignment")
-def test_remove_switch_assignment_success(mock):
-    mock.return_value = {}
-    result = remove_wwise_switch_assignment(child="\\path\\Child", state_or_switch="\\path\\Switch")
-    assert "error" not in result
+@patch("mcp_containers.server._switch_container_remove_assignments")
+def test_remove_switch_assignments_single(mock):
+    mock.return_value = [{}]
+    result = remove_wwise_switch_assignments(
+        assignments=[{"child": "\\path\\Child", "state_or_switch": "\\path\\Switch"}]
+    )
+    assert len(result) == 1
 
 
-@patch("mcp_containers.server._switch_container_remove_assignment", side_effect=CannotConnectToWaapiException)
-def test_remove_switch_assignment_error(mock):
-    result = remove_wwise_switch_assignment(child="\\test", state_or_switch="\\test")
+@patch("mcp_containers.server._switch_container_remove_assignments", side_effect=CannotConnectToWaapiException)
+def test_remove_switch_assignments_error(mock):
+    result = remove_wwise_switch_assignments(
+        assignments=[{"child": "\\test", "state_or_switch": "\\test"}]
+    )
     assert "error" in result
 
 

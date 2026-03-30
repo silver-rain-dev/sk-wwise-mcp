@@ -7,12 +7,15 @@ from waapi import CannotConnectToWaapiException
 from mcp_pipeline.server import (
     import_audio_files,
     import_tab_delimited_file,
+    import_audio_directory,
+    convert_audio_to_wav,
     set_wwise_soundbank_inclusions,
     get_wwise_soundbank_inclusions,
     generate_wwise_soundbanks,
     process_wwise_soundbank_definitions,
     convert_wwise_external_sources,
     get_wwise_log,
+    generate_tab_delimited_file,
 )
 
 
@@ -29,6 +32,50 @@ def test_import_audio_files_success(mock):
 def test_import_audio_files_error(mock):
     result = import_audio_files(imports=[{"objectPath": "\\test"}])
     assert "error" in result
+
+
+@patch("mcp_pipeline.server.import_audio", side_effect=FileNotFoundError("ffmpeg not found"))
+def test_import_audio_files_no_ffmpeg_error(mock):
+    result = import_audio_files(imports=[{"objectPath": "\\test", "audioFile": "C:/bad.ogg"}])
+    assert "error" in result
+    assert "ffmpeg" in result["error"]
+
+
+# --- import audio directory ---
+
+
+@patch("mcp_pipeline.server._scan_and_import_directory")
+def test_import_audio_directory_success(mock):
+    mock.return_value = {"matched": 5, "imported": 5, "unmatched_files": [], "unmatched_objects": [], "objects": []}
+    result = import_audio_directory(directory="C:/audio", import_location="\\AM\\SFX")
+    assert result["matched"] == 5
+    mock.assert_called_once_with(
+        directory="C:/audio", import_location="\\AM\\SFX",
+        import_language="SFX", import_operation="useExisting", originals_sub_folder=None,
+    )
+
+
+@patch("mcp_pipeline.server._scan_and_import_directory", side_effect=NotADirectoryError("bad path"))
+def test_import_audio_directory_bad_dir(mock):
+    result = import_audio_directory(directory="C:/nope", import_location="\\AM\\SFX")
+    assert "error" in result
+
+
+# --- convert audio to wav ---
+
+
+@patch("mcp_pipeline.server._convert_to_wav")
+def test_convert_audio_to_wav_success(mock):
+    mock.return_value = {"output_directory": "C:/out", "converted": ["C:/out/a.wav"], "skipped": [], "errors": []}
+    result = convert_audio_to_wav(input_directory="C:/in", output_directory="C:/out")
+    assert len(result["converted"]) == 1
+
+
+@patch("mcp_pipeline.server._convert_to_wav", side_effect=FileNotFoundError("ffmpeg not found"))
+def test_convert_audio_to_wav_no_ffmpeg(mock):
+    result = convert_audio_to_wav(input_directory="C:/in", output_directory="C:/out")
+    assert "error" in result
+    assert "ffmpeg" in result["error"]
 
 
 # --- import tab delimited ---
@@ -150,3 +197,36 @@ def test_get_log_success(mock):
 def test_get_log_error(mock):
     result = get_wwise_log(channel="general")
     assert "error" in result
+
+
+# --- generate tab delimited file ---
+
+@patch("mcp_pipeline.server._generate_tab_delimited")
+def test_generate_tab_delimited_file_success(mock):
+    mock.return_value = {"output_path": "C:/out.tsv", "row_count": 2}
+    result = generate_tab_delimited_file(
+        rows=[
+            {"audio_file": "C:/a.wav", "object_path": "\\path\\Sound1"},
+            {"audio_file": "C:/b.wav", "object_path": "\\path\\Sound2"},
+        ],
+        output_path="C:/out.tsv",
+    )
+    assert result["row_count"] == 2
+    assert result["output_path"] == "C:/out.tsv"
+
+
+@patch("mcp_pipeline.server._generate_tab_delimited")
+def test_generate_tab_delimited_file_empty(mock):
+    mock.return_value = {"error": "No rows provided"}
+    result = generate_tab_delimited_file(rows=[], output_path="C:/out.tsv")
+    assert "error" in result
+
+
+@patch("mcp_pipeline.server._generate_tab_delimited")
+def test_generate_tab_delimited_file_with_properties(mock):
+    mock.return_value = {"output_path": "C:/out.tsv", "row_count": 1}
+    result = generate_tab_delimited_file(
+        rows=[{"audio_file": "C:/a.wav", "object_path": "\\path\\S", "@Volume": "-3.0"}],
+        output_path="C:/out.tsv",
+    )
+    assert result["row_count"] == 1

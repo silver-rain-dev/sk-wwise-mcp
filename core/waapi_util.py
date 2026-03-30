@@ -222,14 +222,18 @@ def _reconnect():
         _dispatcher = None
 
 
-def _ensure_connection() -> WaapiDispatcher:
+def _ensure_connection(max_retries: int = 3, base_delay: float = 1.0) -> WaapiDispatcher:
     """Get a working dispatcher, reconnecting or restarting server if needed.
 
     Strategy:
     1. Get dispatcher — if connected, ping to verify it's alive
-    2. If ping fails, reconnect the client
+    2. If ping fails, close stale connection and reconnect with backoff
     3. If reconnect fails and we started the headless server, restart it
     4. If nothing works, raise CannotConnectToWaapiException
+
+    Args:
+        max_retries: Number of reconnect attempts before giving up.
+        base_delay: Initial delay in seconds between retries (doubles each attempt).
     """
     # Step 1: try existing connection
     try:
@@ -240,15 +244,18 @@ def _ensure_connection() -> WaapiDispatcher:
     except Exception:
         pass
 
-    # Step 2: reconnect client
-    _reconnect()
-    try:
-        dispatcher = _get_dispatcher()
-        result = dispatcher.call("ak.wwise.core.ping", {})
-        if result and result.get("isAvailable"):
-            return dispatcher
-    except Exception:
-        pass
+    # Step 2: close stale connection and reconnect with backoff retries
+    for attempt in range(max_retries):
+        delay = base_delay * (2 ** attempt)
+        _reconnect()
+        time.sleep(delay)
+        try:
+            dispatcher = _get_dispatcher()
+            result = dispatcher.call("ak.wwise.core.ping", {})
+            if result and result.get("isAvailable"):
+                return dispatcher
+        except Exception:
+            pass
 
     # Step 3: restart headless server if we have a lockfile
     if _read_server_lockfile() is not None:
@@ -332,3 +339,11 @@ def call(uri: str, args: dict = None, options: dict = None, timeout: float = 30)
         # of queuing behind a blocked worker.
         _reconnect()
         raise
+    except WaapiQueueFullError:
+        raise
+    except Exception:
+        # Connection may have died between the ping and the actual call.
+        # Reconnect and retry once before giving up.
+        _reconnect()
+        dispatcher = _ensure_connection()
+        return dispatcher.call(uri, payload, timeout=timeout)

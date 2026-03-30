@@ -9,12 +9,16 @@ sys.path.insert(0, str(Path(__file__).parent.parent.parent))
 
 from core.objects import (
     create_object,
+    create_objects,
     delete_object,
+    delete_objects,
     set_name,
     set_notes,
     set_property,
     set_reference,
+    set_properties,
     move_object,
+    move_objects,
     copy_object,
 )
 
@@ -68,6 +72,45 @@ def test_create_with_properties(wwise):
     delete_object(object=result["id"])
 
 
+def test_create_objects_batch(wwise):
+    """Test creating multiple objects across different parents in one batch."""
+    results = create_objects([
+        {
+            "parent": "\\Containers\\Default Work Unit",
+            "type": "ActorMixer",
+            "name": "IntTestBatch1",
+            "on_name_conflict": "replace",
+        },
+        {
+            "parent": "\\Containers\\Default Work Unit",
+            "type": "Sound",
+            "name": "IntTestBatch2",
+            "on_name_conflict": "replace",
+        },
+    ])
+    assert len(results) == 2
+    assert "id" in results[0]
+    assert "id" in results[1]
+
+    # Cleanup
+    delete_objects([results[0]["id"], results[1]["id"]])
+
+
+def test_delete_objects_batch(wwise):
+    """Test deleting multiple objects in one batch."""
+    obj1 = create_object(
+        parent="\\Containers\\Default Work Unit",
+        type="Sound", name="IntTestDelBatch1", on_name_conflict="replace",
+    )
+    obj2 = create_object(
+        parent="\\Containers\\Default Work Unit",
+        type="Sound", name="IntTestDelBatch2", on_name_conflict="replace",
+    )
+
+    results = delete_objects([obj1["id"], obj2["id"]])
+    assert len(results) == 2
+
+
 def test_set_property(wwise):
     # Create a temp object
     obj = create_object(
@@ -82,6 +125,29 @@ def test_set_property(wwise):
 
     # Cleanup
     delete_object(object=obj["id"])
+
+
+def test_set_properties_batch(wwise):
+    """Test setting properties and references on multiple objects in one batch."""
+    obj1 = create_object(
+        parent="\\Containers\\Default Work Unit",
+        type="Sound", name="IntTestPropBatch1", on_name_conflict="replace",
+    )
+    obj2 = create_object(
+        parent="\\Containers\\Default Work Unit",
+        type="Sound", name="IntTestPropBatch2", on_name_conflict="replace",
+    )
+
+    results = set_properties([
+        {"object": obj1["id"], "properties": {"Volume": -6.0, "Pitch": 100}},
+        {"object": obj2["id"], "properties": {"Volume": -3.0}},
+    ])
+    assert len(results) == 2
+    assert results[0]["ok"] is True
+    assert results[1]["ok"] is True
+
+    # Cleanup
+    delete_objects([obj1["id"], obj2["id"]])
 
 
 def test_set_name(wwise):
@@ -137,6 +203,36 @@ def test_move_object(wwise):
     # Cleanup
     delete_object(object=parent1["id"])
     delete_object(object=parent2["id"])
+
+
+def test_move_objects_batch(wwise):
+    """Test moving multiple objects in one batch."""
+    parent1 = create_object(
+        parent="\\Containers\\Default Work Unit",
+        type="ActorMixer", name="IntTestMoveBatchFrom",
+        on_name_conflict="replace",
+        children=[
+            {"type": "Sound", "name": "IntTestMoveB1"},
+            {"type": "Sound", "name": "IntTestMoveB2"},
+        ],
+    )
+    parent2 = create_object(
+        parent="\\Containers\\Default Work Unit",
+        type="ActorMixer", name="IntTestMoveBatchTo",
+        on_name_conflict="replace",
+    )
+
+    child_ids = [c["id"] for c in parent1["children"]]
+    results = move_objects([
+        {"object": child_ids[0], "parent": parent2["id"]},
+        {"object": child_ids[1], "parent": parent2["id"]},
+    ])
+    assert len(results) == 2
+    assert "id" in results[0]
+    assert "id" in results[1]
+
+    # Cleanup
+    delete_objects([parent1["id"], parent2["id"]])
 
 
 def test_copy_object(wwise):

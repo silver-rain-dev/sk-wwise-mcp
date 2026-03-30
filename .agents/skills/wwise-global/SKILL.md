@@ -16,6 +16,7 @@ metadata:
 - When `get_wwise_object_info` results are large, read the saved `output_file` — the preview only shows 10 items
 - For bulk operations (50+ objects), warn the user before proceeding
 - Use `mcp_generic` as a last resort only — check specialized servers first
+- Clean up temporary files (JSON, TSV, Python scripts) created for batch operations after the operation completes successfully
 - `mcp_command_line` works without WAAPI — use it when Wwise is not running
 - Profiler data requires `enable_wwise_profiler_data` to be called first for most data types
 
@@ -23,6 +24,12 @@ metadata:
 
 ### Output Bus Inheritance
 When querying `@OutputBus` on a Wwise object, WAAPI returns the LOCAL value, not the effective (inherited) one. If `@OverrideOutput` is false, the object inherits its output bus from an ancestor. To find the actual routing, walk the ancestor chain (using `select_transform="ancestors"`) and find the nearest ancestor where `@OutputBus` is set. Always check `@OverrideOutput`.
+
+### Audio Import Requires WAV
+WAAPI's audio import (`import_audio_files`, `import_tab_delimited_file`) only creates AudioFileSource objects for **WAV** files. Other formats (OGG, FLAC, MP3) get copied to the Originals folder but are **not linked** to their Sound objects — the import silently succeeds with no AudioFileSource created. If source audio is not WAV, convert to WAV first (e.g. via ffmpeg) before importing.
+
+### Event Action Targets Must Be Playable
+When setting the `Target` reference on an Action, the target must be a playable object type (Sound, ActorMixer, RandomSequenceContainer, SwitchContainer, BlendContainer, MusicSwitchContainer, MusicPlaylistContainer, MusicSegment). Virtual folders (`PropertyContainer`) and Work Units **cannot** be Action targets — WAAPI silently ignores the `setReference` call with no error.
 
 ## Common Workflows
 
@@ -36,7 +43,8 @@ When querying `@OutputBus` on a Wwise object, WAAPI returns the LOCAL value, not
 2. **wwise-objects** — create containers, set properties, assign busses
 3. **wwise-containers** — set up switch assignments, state groups
 4. **wwise-objects** — create Events
-5. **wwise-pipeline** — add to SoundBank and generate
+5. **wwise-objects** — create Actions under Events (`type: "Action"`, set ActionType + Target reference)
+6. **wwise-pipeline** — add to SoundBank and generate
 
 ### Audition
 1. **wwise-audition** — `create_wwise_transport` (auto-prepares)
@@ -64,8 +72,9 @@ When querying `@OutputBus` on a Wwise object, WAAPI returns the LOCAL value, not
 4. **wwise-pipeline** — `import_audio_files` to link audio to objects
 5. **wwise-containers** — set up switches, states, blend tracks
 6. **wwise-objects** — create Events, set references (busses, attenuations)
-7. **wwise-pipeline** — create SoundBanks, set inclusions, generate
-8. **wwise-audition** — preview results
+7. **wwise-objects** — create Actions under Events (set ActionType + Target)
+8. **wwise-pipeline** — create SoundBanks, set inclusions, generate
+9. **wwise-audition** — preview results
 
 ## Server Overview
 

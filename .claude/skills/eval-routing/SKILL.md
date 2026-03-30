@@ -40,8 +40,8 @@ When all cases are tested the skill prints **"All cases evaluated"**, auto-gener
    - Use MCP tools normally to fulfill the request
    - For write operations (create, delete, move), always clean up after:
      - Check if the case has a `"cleanup"` field in test_cases.json
-     - If `cleanup.tool` is `"set_wwise_object_property"`: restore the original value using
-       `set_wwise_object_property(object=cleanup.object, property=cleanup.property, value=cleanup.restore_value)`
+     - If `cleanup.tool` is `"set_wwise_object_properties"`: restore the original value using
+       `set_wwise_object_properties(operations=[{"object": cleanup.object, "properties": {cleanup.property: cleanup.restore_value}}])`
      - If `cleanup.tool` is `"set_wwise_object_name"`: rename back using
        `set_wwise_object_name(object=cleanup.object_after, value=cleanup.restore_name)`
      - If `cleanup.bulk_restore` exists: iterate and restore each entry

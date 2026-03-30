@@ -44,6 +44,10 @@ generic_usage.log
 GeneratedSoundBanks/
 Originals/
 
+# Local test files
+pokemon-rgy-wwise-plan.md
+
+
 # IDE
 .vscode/
 .idea/

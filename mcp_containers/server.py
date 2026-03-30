@@ -9,7 +9,9 @@ from core.objects import (
     set_state_groups as _set_state_groups,
     set_state_properties as _set_state_properties,
     switch_container_add_assignment as _switch_container_add_assignment,
+    switch_container_add_assignments as _switch_container_add_assignments,
     switch_container_remove_assignment as _switch_container_remove_assignment,
+    switch_container_remove_assignments as _switch_container_remove_assignments,
     blend_container_add_assignment as _blend_container_add_assignment,
     blend_container_remove_assignment as _blend_container_remove_assignment,
     set_game_parameter_range as _set_game_parameter_range,
@@ -150,38 +152,66 @@ def set_wwise_state_properties(
 
 
 @mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
-def add_wwise_switch_assignment(
-    child: str,
-    state_or_switch: str,
+def add_wwise_switch_assignments(
+    assignments: list[dict],
+    container: Optional[str] = None,
 ):
-    """Assign a Switch Container's child to a State or Switch.
+    """Assign one or more Switch Container children to States or Switches.
 
-    Equivalent to drag-and-dropping a child onto a state in the Assigned Objects view.
+    Equivalent to drag-and-dropping children onto states in the Assigned Objects view.
+
+    Each entry in assignments is a dict with:
+        child (required):           The child object of the Switch Container.
+                                    Accepts path, GUID, or type:name.
+                                    When container is set, can be a short name (e.g. "Absorb").
+        state_or_switch (required): The State or Switch to assign to. Must be a child of the
+                                    Switch/State Group set on the Switch Container.
+                                    When container is set, can be a short name (e.g. "Absorb").
 
     Args:
-        child:           The child object of the Switch Container. Accepts path, GUID, or type:name.
-        state_or_switch: The State or Switch to assign to. Must be a child of the
-                         Switch/State Group set on the Switch Container.
+        container: Optional Switch Container path or GUID. When provided, short names
+                   in child and state_or_switch are automatically resolved by querying
+                   the container's children and its switch group's switches.
+                   This dramatically reduces token usage for large batch assignments.
+                   Example: container="\\\\Actor-Mixer Hierarchy\\\\Default Work Unit\\\\SFX\\\\SFX_Moves"
+                   Then assignments can use: [{"child": "Absorb", "state_or_switch": "Absorb"}, ...]
+
+    For a single assignment, pass a list with one entry.
+
+    Returns a list of result dicts, one per assignment. On individual failure,
+    that entry contains an "error" key.
     """
     try:
-        return _switch_container_add_assignment(child=child, state_or_switch=state_or_switch)
+        return _switch_container_add_assignments(assignments=assignments, container=container)
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 
 
 @mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
-def remove_wwise_switch_assignment(
-    child: str,
-    state_or_switch: str,
+def remove_wwise_switch_assignments(
+    assignments: list[dict],
+    container: Optional[str] = None,
 ):
-    """Remove an assignment between a Switch Container's child and a State or Switch.
+    """Remove one or more assignments between Switch Container children and States/Switches.
+
+    Each entry in assignments is a dict with:
+        child (required):           The child object currently assigned.
+                                    Accepts path, GUID, or type:name.
+                                    When container is set, can be a short name.
+        state_or_switch (required): The State or Switch from which to remove the assignment.
+                                    When container is set, can be a short name.
 
     Args:
-        child:           The child object currently assigned. Accepts path, GUID, or type:name.
-        state_or_switch: The State or Switch from which to remove the assignment.
+        container: Optional Switch Container path or GUID. When provided, short names
+                   are resolved by querying the container's children and switch group.
+
+    For a single removal, pass a list with one entry.
+
+    Returns a list of result dicts, one per assignment. On individual failure,
+    that entry contains an "error" key.
     """
     try:
-        return _switch_container_remove_assignment(child=child, state_or_switch=state_or_switch)
+        return _switch_container_remove_assignments(assignments=assignments, container=container)
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 

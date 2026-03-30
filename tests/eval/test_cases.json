@@ -92,15 +92,15 @@
   {
     "id": 16,
     "prompt": "Create an ActorMixer called TestRouting under Default Work Unit, then delete it",
-    "expected_tools": ["create_wwise_object", "delete_wwise_object"],
+    "expected_tools": ["create_wwise_objects", "delete_wwise_objects"],
     "category": "objects"
   },
   {
     "id": 17,
     "prompt": "Set the Volume on Footstep_01 to -12",
-    "expected_tools": ["set_wwise_object_property"],
+    "expected_tools": ["set_wwise_object_properties"],
     "category": "objects",
-    "cleanup": {"tool": "set_wwise_object_property", "object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_01", "property": "Volume", "restore_value": 0}
+    "cleanup": {"tool": "set_wwise_object_properties", "object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_01", "property": "Volume", "restore_value": 0}
   },
   {
     "id": 18,
@@ -238,9 +238,9 @@
   {
     "id": 38,
     "prompt": "Change every Sound's Volume to -6 dB",
-    "expected_tools": ["build_object_info_query", "get_wwise_object_info", "set_wwise_object_property"],
+    "expected_tools": ["build_object_info_query", "get_wwise_object_info", "set_wwise_object_properties"],
     "category": "cross-server",
-    "cleanup": {"tool": "set_wwise_object_property", "bulk_restore": [
+    "cleanup": {"tool": "set_wwise_object_properties", "bulk_restore": [
       {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_01", "property": "Volume", "restore_value": 0},
       {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_02", "property": "Volume", "restore_value": 0},
       {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Weapons\\Sword_Hit", "property": "Volume", "restore_value": 0},
@@ -254,5 +254,42 @@
     "prompt": "Get the project platforms, then check if Volume is linked on Footstep_01 for each platform",
     "expected_tools": ["get_wwise_project_info", "is_wwise_property_linked"],
     "category": "cross-server"
+  },
+  {
+    "id": 40,
+    "prompt": "Create 3 Events: Play_Music, Play_SFX, and Play_Ambience under the Events Default Work Unit, then delete all 3",
+    "expected_tools": ["create_wwise_objects", "delete_wwise_objects"],
+    "category": "objects"
+  },
+  {
+    "id": 41,
+    "prompt": "Set Volume to -6 and OverrideOutput to true on both Footstep_01 and Footstep_02",
+    "expected_tools": ["set_wwise_object_properties"],
+    "category": "objects",
+    "cleanup": {"tool": "set_wwise_object_properties", "bulk_restore": [
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_01", "property": "Volume", "restore_value": 0},
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_02", "property": "Volume", "restore_value": 0}
+    ]}
+  },
+  {
+    "id": 42,
+    "prompt": "Generate a tab-delimited import file with 3 sounds (step1.wav, step2.wav, step3.wav) under Containers Default Work Unit, save it to C:/temp/import.tsv",
+    "expected_tools": ["generate_tab_delimited_file"],
+    "category": "pipeline"
+  },
+  {
+    "id": 43,
+    "prompt": "Create two Sounds under the Footsteps container, then move them both to the Ambience container",
+    "expected_tools": ["create_wwise_objects", "move_wwise_objects"],
+    "category": "objects"
+  },
+  {
+    "id": 44,
+    "prompt": "Route the Footsteps container to the Master Audio Bus by setting OutputBus reference and enabling OverrideOutput",
+    "expected_tools": ["set_wwise_object_properties"],
+    "category": "objects",
+    "cleanup": {"tool": "set_wwise_object_properties", "bulk_restore": [
+      {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps", "property": "OverrideOutput", "restore_value": false}
+    ]}
   }
 ]

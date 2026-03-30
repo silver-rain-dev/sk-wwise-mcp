@@ -1,2 +1,4 @@
-{"tool": "mcp__sk-wwise-browse__get_wwise_project_info", "input": {}}
-{"tool": "mcp__sk-wwise-browse__is_wwise_property_linked", "input": {"object_path": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps\\Footstep_01", "property_name": "Volume", "platform": "Windows"}}
+{"tool": "mcp__sk-wwise-audition__create_wwise_transport", "input": {"object_name_with_type": "Event:Play_Footstep"}}
+{"tool": "mcp__sk-wwise-audition__execute_wwise_transport_action", "input": {"action": "play", "transport_id": 0}}
+{"tool": "mcp__sk-wwise-audition__execute_wwise_transport_action", "input": {"action": "stop", "transport_id": 0}}
+{"tool": "mcp__sk-wwise-objects__delete_wwise_objects", "input": {"objects": ["\\Events\\Default Work Unit\\Play_Footstep"]}}

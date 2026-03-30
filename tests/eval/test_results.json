@@ -195,12 +195,12 @@
     "category": "objects",
     "pass": true,
     "expected": [
-      "create_wwise_object",
-      "delete_wwise_object"
+      "create_wwise_objects",
+      "delete_wwise_objects"
     ],
     "actual": [
-      "create_wwise_object",
-      "delete_wwise_object"
+      "create_wwise_objects",
+      "delete_wwise_objects"
     ]
   },
   {
@@ -209,10 +209,10 @@
     "category": "objects",
     "pass": true,
     "expected": [
-      "set_wwise_object_property"
+      "set_wwise_object_properties"
     ],
     "actual": [
-      "set_wwise_object_property"
+      "set_wwise_object_properties"
     ]
   },
   {
@@ -238,8 +238,6 @@
     ],
     "actual": [
       "build_object_info_query",
-      "create_wwise_transport",
-      "execute_wwise_transport_action",
       "get_wwise_object_info"
     ]
   },
@@ -254,7 +252,6 @@
     ],
     "actual": [
       "build_object_info_query",
-      "get_property_and_reference_names",
       "get_wwise_object_info"
     ]
   },
@@ -402,20 +399,6 @@
     ]
   },
   {
-    "id": 32,
-    "prompt": "Create a transport for the Play_Footstep event, play it, then stop it",
-    "category": "audition",
-    "pass": true,
-    "expected": [
-      "create_wwise_transport",
-      "execute_wwise_transport_action"
-    ],
-    "actual": [
-      "create_wwise_transport",
-      "execute_wwise_transport_action"
-    ]
-  },
-  {
     "id": 33,
     "prompt": "Get the waveform peaks for the first 2 seconds of Footstep_01",
     "category": "media-read",
@@ -488,12 +471,12 @@
     "expected": [
       "build_object_info_query",
       "get_wwise_object_info",
-      "set_wwise_object_property"
+      "set_wwise_object_properties"
     ],
     "actual": [
       "build_object_info_query",
       "get_wwise_object_info",
-      "set_wwise_object_property"
+      "set_wwise_object_properties"
     ]
   },
   {
@@ -508,6 +491,85 @@
     "actual": [
       "get_wwise_project_info",
       "is_wwise_property_linked"
+    ]
+  },
+  {
+    "id": 40,
+    "prompt": "Create 3 Events: Play_Music, Play_SFX, and Play_Ambience under the Events Default Work Unit, then delete all 3",
+    "category": "objects",
+    "pass": true,
+    "expected": [
+      "create_wwise_objects",
+      "delete_wwise_objects"
+    ],
+    "actual": [
+      "create_wwise_objects",
+      "delete_wwise_objects"
+    ]
+  },
+  {
+    "id": 41,
+    "prompt": "Set Volume to -6 and OverrideOutput to true on both Footstep_01 and Footstep_02",
+    "category": "objects",
+    "pass": true,
+    "expected": [
+      "set_wwise_object_properties"
+    ],
+    "actual": [
+      "set_wwise_object_properties"
+    ]
+  },
+  {
+    "id": 42,
+    "prompt": "Generate a tab-delimited import file with 3 sounds (step1.wav, step2.wav, step3.wav) under Containers Default Work Unit, save it to C:/temp/import.tsv",
+    "category": "pipeline",
+    "pass": true,
+    "expected": [
+      "generate_tab_delimited_file"
+    ],
+    "actual": [
+      "generate_tab_delimited_file"
+    ]
+  },
+  {
+    "id": 43,
+    "prompt": "Create two Sounds under the Footsteps container, then move them both to the Ambience container",
+    "category": "objects",
+    "pass": true,
+    "expected": [
+      "create_wwise_objects",
+      "move_wwise_objects"
+    ],
+    "actual": [
+      "create_wwise_objects",
+      "delete_wwise_objects",
+      "move_wwise_objects"
+    ]
+  },
+  {
+    "id": 44,
+    "prompt": "Route the Footsteps container to the Master Audio Bus by setting OutputBus reference and enabling OverrideOutput",
+    "category": "objects",
+    "pass": true,
+    "expected": [
+      "set_wwise_object_properties"
+    ],
+    "actual": [
+      "set_wwise_object_properties"
+    ]
+  },
+  {
+    "id": 32,
+    "prompt": "Create a transport for the Play_Footstep event, play it, then stop it",
+    "category": "audition",
+    "pass": true,
+    "expected": [
+      "create_wwise_transport",
+      "execute_wwise_transport_action"
+    ],
+    "actual": [
+      "create_wwise_transport",
+      "execute_wwise_transport_action"
     ]
   }
 ]
