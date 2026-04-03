@@ -8,7 +8,7 @@ where uv >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo Found uv, using it for setup...
     cd /d "%~dp0"
-    uv run setup.py
+    uv run install.py
     exit /b
 )
 
@@ -17,7 +17,7 @@ where python >nul 2>&1
 if %ERRORLEVEL% EQU 0 (
     echo Found python, using it for setup...
     cd /d "%~dp0"
-    python setup.py
+    python install.py
     exit /b
 )
 

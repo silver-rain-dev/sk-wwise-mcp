@@ -14,6 +14,13 @@ dev = [
     "pytest>=8.0",
 ]
 
+[build-system]
+requires = ["setuptools>=64"]
+build-backend = "setuptools.build_meta"
+
+[tool.setuptools.packages.find]
+include = ["core*", "mcp_*", "profiles*"]
+
 [tool.pytest.ini_options]
 markers = [
     "integration: requires a running Wwise headless WAAPI server (deselect with '-m \"not integration\"')",
