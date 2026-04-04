@@ -58,6 +58,36 @@ def test_get_object_types(wwise):
     assert "Event" in names
 
 
+def test_root_path_returns_empty(wwise):
+    """Querying from root path '\\' returns 0 results — a known WAAPI quirk.
+
+    This documents the behavior so agents know to always query from specific
+    hierarchy paths (\\Containers, \\Events, etc.) instead of root.
+    """
+    query = build_object_info_query(
+        from_path=["\\"],
+        select_transform="descendants",
+    )
+    raw = execute_object_query(query)
+    objects = raw["return"] if isinstance(raw, dict) else raw
+    assert len(objects) == 0, (
+        "Root path query returned results — if WAAPI fixed this behavior, "
+        "update the SKILL.md documentation to reflect the change"
+    )
+
+
+def test_specific_hierarchy_path_returns_results(wwise):
+    """Querying from specific hierarchy paths works correctly."""
+    for path in ["\\Containers", "\\Events"]:
+        query = build_object_info_query(
+            from_path=[path],
+            select_transform="descendants",
+        )
+        raw = execute_object_query(query)
+        objects = raw["return"] if isinstance(raw, dict) else raw
+        assert len(objects) > 0, f"Query from {path} should return results"
+
+
 def test_build_and_execute_query_descendants(wwise):
     query = build_object_info_query(
         from_path=["\\Containers\\Default Work Unit"],

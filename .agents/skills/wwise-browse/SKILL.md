@@ -26,3 +26,15 @@ metadata:
 - `get_wwise_object_info` returns only a 10-item preview. Read the `output_file` path for complete results.
 - Always use `build_object_info_query()` before `get_wwise_object_info()` — do not hand-craft the query dict.
 - `@OutputBus` returns the LOCAL value, not inherited. Check `@OverrideOutput` and walk ancestors if needed.
+
+## Query Path Gotcha
+
+**NEVER query from the absolute root path `["\\"]`** — WAAPI returns 0 results when querying from root.
+Always use specific hierarchy paths in `from_path`:
+- `["\\Containers"]` — for RandomSequenceContainers, SwitchContainers, BlendContainers, Sounds
+- `["\\Events"]` — for Events
+- `["\\Master-Mixer Hierarchy"]` — for Busses
+- `["\\Actor-Mixer Hierarchy"]` — same objects as Containers but via the Actor-Mixer view
+- `["\\SoundBanks"]`, `["\\Switches"]`, `["\\States"]`, `["\\Game Parameters"]`, etc.
+
+If a query returns 0 results, try a different `from_path` before concluding objects don't exist.

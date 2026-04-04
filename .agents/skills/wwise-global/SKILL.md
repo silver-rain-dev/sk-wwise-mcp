@@ -22,6 +22,9 @@ metadata:
 
 ## WAAPI Gotchas
 
+### Root Path Queries Return Empty
+**Never use `from_path: ["\\"]`** (the absolute root) in object queries — WAAPI returns 0 results. Always query from specific hierarchy roots: `["\\Containers"]`, `["\\Events"]`, `["\\Master-Mixer Hierarchy"]`, `["\\Actor-Mixer Hierarchy"]`, etc. If a query returns 0 results, try a different `from_path` before concluding the project is empty.
+
 ### Output Bus Inheritance
 When querying `@OutputBus` on a Wwise object, WAAPI returns the LOCAL value, not the effective (inherited) one. If `@OverrideOutput` is false, the object inherits its output bus from an ancestor. To find the actual routing, walk the ancestor chain (using `select_transform="ancestors"`) and find the nearest ancestor where `@OutputBus` is set. Always check `@OverrideOutput`.
 
