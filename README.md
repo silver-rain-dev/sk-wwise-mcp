@@ -112,7 +112,7 @@ Use forward slashes on Windows. Repeat for each server — see `.mcp.json` in th
 
 ```
 sk-wwise-mcp/
-├── .agents/skills/         # Agent Skills (SKILL.md per server)
+├── .claude/skills/         # Agent Skills (SKILL.md per server)
 │   ├── wwise-global/       # Global rules and workflows
 │   ├── wwise-browse/       # Browse server skill
 │   ├── wwise-objects/      # Objects server skill
@@ -195,7 +195,7 @@ This means you can build a "read-only assistant" by enabling only the read serve
 
 #### LLM tool routing accuracy
 
-LLMs get worse at selecting the right tool as the tool count grows. By capping each server at ~15 tools, the model sees a focused set of tools relevant to the task. Agent Skills (`.agents/skills/`) route the LLM to the correct server based on the user's intent, keeping the active tool set small even though 95 tools exist across the suite.
+LLMs get worse at selecting the right tool as the tool count grows. By capping each server at ~15 tools, the model sees a focused set of tools relevant to the task. Agent Skills (`.claude/skills/`) route the LLM to the correct server based on the user's intent, keeping the active tool set small even though 95 tools exist across the suite.
 
 ### Thread-Safe WAAPI Dispatcher
 
@@ -207,7 +207,7 @@ All WAAPI calls are serialized through a queue-based dispatcher (`core/waapi_uti
 
 ### Agent Skills
 
-The `.agents/skills/` directory contains [Agent Skills](https://agentskills.io/) files that route LLMs to the correct server based on the task. The `wwise-global` skill contains shared rules and workflow patterns.
+The `.claude/skills/` directory contains [Agent Skills](https://agentskills.io/) files that route LLMs to the correct server based on the task. The `wwise-global` skill contains shared rules and workflow patterns.
 
 ## Testing
 

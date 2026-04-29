@@ -1,0 +1,16 @@
+{
+  "mcpServers": {
+    "sk-wwise-browse":            { "command": "./sk-wwise-mcp.exe", "args": ["--server", "browse"] },
+    "sk-wwise-audition":          { "command": "./sk-wwise-mcp.exe", "args": ["--server", "audition"] },
+    "sk-wwise-objects":           { "command": "./sk-wwise-mcp.exe", "args": ["--server", "objects"] },
+    "sk-wwise-containers":        { "command": "./sk-wwise-mcp.exe", "args": ["--server", "containers"] },
+    "sk-wwise-pipeline":          { "command": "./sk-wwise-mcp.exe", "args": ["--server", "pipeline"] },
+    "sk-wwise-generic":           { "command": "./sk-wwise-mcp.exe", "args": ["--server", "generic"] },
+    "sk-wwise-media-read":        { "command": "./sk-wwise-mcp.exe", "args": ["--server", "media-read"] },
+    "sk-wwise-profiling":         { "command": "./sk-wwise-mcp.exe", "args": ["--server", "profiling"] },
+    "sk-wwise-profiling-control": { "command": "./sk-wwise-mcp.exe", "args": ["--server", "profiling-control"] },
+    "sk-wwise-command-line":      { "command": "./sk-wwise-mcp.exe", "args": ["--server", "command-line"] },
+    "sk-wwise-remote":            { "command": "./sk-wwise-mcp.exe", "args": ["--server", "remote"] },
+    "sk-wwise-ui":                { "command": "./sk-wwise-mcp.exe", "args": ["--server", "ui"] }
+  }
+}

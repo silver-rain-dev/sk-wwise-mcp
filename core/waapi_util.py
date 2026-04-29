@@ -1,6 +1,7 @@
 import json
 import os
 import subprocess
+import sys
 import time
 import threading
 from pathlib import Path
@@ -8,7 +9,17 @@ from queue import Queue, Full
 
 from waapi import WaapiClient, CannotConnectToWaapiException
 
-_LOCKFILE = Path(__file__).parent.parent / ".waapi_server.lock"
+
+def _lockfile_path() -> Path:
+    # When frozen (PyInstaller), __file__ lives inside the per-process _MEIPASS
+    # extraction dir, so the lockfile would no longer coordinate across servers.
+    # Anchor to the exe's directory instead so all bundled servers share it.
+    if getattr(sys, "frozen", False):
+        return Path(sys.executable).parent / ".waapi_server.lock"
+    return Path(__file__).parent.parent / ".waapi_server.lock"
+
+
+_LOCKFILE = _lockfile_path()
 
 
 class WaapiQueueFullError(Exception):
