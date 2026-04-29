@@ -1,4 +1,0 @@
-{"tool": "mcp__sk-wwise-audition__create_wwise_transport", "input": {"object_name_with_type": "Event:Play_Footstep"}}
-{"tool": "mcp__sk-wwise-audition__execute_wwise_transport_action", "input": {"action": "play", "transport_id": 0}}
-{"tool": "mcp__sk-wwise-audition__execute_wwise_transport_action", "input": {"action": "stop", "transport_id": 0}}
-{"tool": "mcp__sk-wwise-objects__delete_wwise_objects", "input": {"objects": ["\\Events\\Default Work Unit\\Play_Footstep"]}}
