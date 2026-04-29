@@ -55,10 +55,22 @@ def install_dependencies():
         subprocess.run(["uv", "sync"], cwd=str(PROJECT_DIR), check=True)
     else:
         print("  uv not found, falling back to pip...")
+        venv_python = get_python_path()
         if not VENV_DIR.exists():
             subprocess.run([sys.executable, "-m", "venv", str(VENV_DIR)], check=True)
-        pip = str(VENV_DIR / ("Scripts" if platform.system() == "Windows" else "bin") / "pip")
-        subprocess.run([pip, "install", "-e", "."], cwd=str(PROJECT_DIR), check=True)
+        # Ensure pip is available (uv-created venvs may lack it)
+        try:
+            subprocess.run(
+                [venv_python, "-m", "pip", "--version"],
+                capture_output=True, check=True,
+            )
+        except (subprocess.CalledProcessError, FileNotFoundError):
+            print("  pip not found in venv, bootstrapping via ensurepip...")
+            subprocess.run([venv_python, "-m", "ensurepip", "--upgrade"], check=True)
+        subprocess.run(
+            [venv_python, "-m", "pip", "install", "-e", "."],
+            cwd=str(PROJECT_DIR), check=True,
+        )
     print("  Done.")
 
 
