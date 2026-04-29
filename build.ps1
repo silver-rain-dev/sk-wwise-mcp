@@ -19,6 +19,7 @@ if (-not (Get-Command pyinstaller -ErrorAction SilentlyContinue)) {
 # 1. Build the exe straight into the bundle folder.
 if (Test-Path $BundleDir) { Remove-Item $BundleDir -Recurse -Force }
 pyinstaller --clean --distpath $BundleDir .\sk-wwise-mcp.spec
+if ($LASTEXITCODE -ne 0) { throw "pyinstaller failed (exit $LASTEXITCODE)" }
 
 # 2. Copy the bundle's .mcp.json (relative paths, all 12 servers).
 Copy-Item .\release\mcp.json (Join-Path $BundleDir ".mcp.json") -Force

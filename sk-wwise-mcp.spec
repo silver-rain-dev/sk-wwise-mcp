@@ -27,11 +27,17 @@ SERVER_MODULES = [
     "mcp_ui.server",
 ]
 
-# fastmcp / mcp / waapi pull submodules dynamically. Sweep the full trees.
+# fastmcp / mcp / waapi pull submodules dynamically. Sweep the full trees, but
+# skip CLI subtrees that depend on optional `typer` — we only embed servers,
+# never invoke the CLI, and pulling typer would balloon the bundle and break
+# clean-environment builds where typer isn't installed.
+def _no_cli(name: str) -> bool:
+    return not name.endswith(".cli") and ".cli." not in name
+
 hiddenimports = (
     SERVER_MODULES
-    + collect_submodules("fastmcp")
-    + collect_submodules("mcp")
+    + collect_submodules("fastmcp", filter=_no_cli)
+    + collect_submodules("mcp", filter=_no_cli)
     + collect_submodules("waapi")
     + collect_submodules("core")
 )
