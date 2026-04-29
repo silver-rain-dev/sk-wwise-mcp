@@ -6,6 +6,50 @@ A modular suite of [MCP (Model Context Protocol)](https://modelcontextprotocol.i
 
 Each server is capped at 15 tools to minimize LLM tool confusion, with [Agent Skills](https://agentskills.io/) routing for multi-agent orchestration.
 
+## Easy Setup (Windows, no Python required)
+
+For Windows users who don't want to install Python or clone the repo:
+
+1. Download `sk-wwise-mcp.zip` from the [latest release](https://github.com/silver-rain-dev/sk-wwise-mcp/releases/latest).
+2. Unzip anywhere on disk.
+3. Open Wwise with WAAPI enabled (Project Settings → Authoring API → "Enable Wwise Authoring API").
+4. Open a terminal in the unzipped folder and run:
+   ```
+   claude
+   ```
+5. Approve the MCP servers when prompted.
+
+That's it. The bundle ships a single `sk-wwise-mcp.exe` (no Python install needed), a pre-configured `.mcp.json` registering all 12 servers, and `.claude/skills/` for routing — all auto-discovered by Claude CLI on launch.
+
+> First launch shows a Windows SmartScreen warning because the binary isn't code-signed. Click **More info → Run anyway** once and Windows remembers it.
+
+### Using the bundle with other agents
+
+The `sk-wwise-mcp.exe` speaks standard MCP over stdio, so it works with any MCP-compatible agent — Cursor, VS Code Copilot, Windsurf, Continue, Gemini CLI, etc. Auto-detection of a top-level `.mcp.json` is Claude Code-specific; other agents need the entries copied into their own config file. Generic shape, point your agent's MCP config at the exe with the matching `--server` arg:
+
+```json
+{
+  "command": "C:/path/to/sk-wwise-mcp/sk-wwise-mcp.exe",
+  "args": ["--server", "browse"]
+}
+```
+
+Common locations for the MCP config:
+
+| Agent | Config path | Root key | Notes |
+|-------|-------------|----------|-------|
+| Claude Code | `.mcp.json` (auto-detected in cwd) | `mcpServers` | Already in the bundle — no setup |
+| Cursor | `.cursor/mcp.json` (project) or `~/.cursor/mcp.json` (global) | `mcpServers` | ~40-tool ceiling — see below |
+| VS Code Copilot | `.vscode/mcp.json` or **MCP: Add Server** command | `servers` ⚠️ | **NOT** `mcpServers` — most common setup mistake |
+| Windsurf | `~/.codeium/windsurf/mcp_config.json` | `mcpServers` | User-level only; 100-tool ceiling |
+| Gemini CLI | `~/.gemini/settings.json` or `.gemini/settings.json` | `mcpServers` | Supports project-level config |
+
+The bundled `.mcp.json` registers all 12 servers — copy entries from there into your agent's config and adjust the `command` path to where you unzipped the bundle. Agent Skills in `.claude/skills/` follow the [open spec](https://agentskills.io/) and load automatically in tools that support it; agents that don't read skills still work, you'll just need to nudge tool selection in your prompts.
+
+> **Cursor users:** This bundle exposes 97 tools across 12 servers. Cursor caps active MCP tools at ~40 across all servers combined — register only the servers you need (e.g., `browse` + `objects` + `audition` covers most workflows at ~25 tools).
+
+For development setup (Python, editable install, testing) see [Quick Start](#quick-start) below.
+
 ## Features
 
 - **97 tools** across **12 MCP servers**, covering the full WAAPI surface
