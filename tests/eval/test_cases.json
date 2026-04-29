@@ -291,5 +291,11 @@
     "cleanup": {"tool": "set_wwise_object_properties", "bulk_restore": [
       {"object": "\\Containers\\Default Work Unit\\EvalTest_SFX\\Footsteps", "property": "OverrideOutput", "restore_value": false}
     ]}
+  },
+  {
+    "id": 45,
+    "prompt": "Tell me about Footstep_01's routing",
+    "expected_tools": ["get_effective_output_bus"],
+    "category": "browse"
   }
 ]

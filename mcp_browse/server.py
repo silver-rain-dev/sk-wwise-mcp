@@ -20,6 +20,7 @@ from core.query import (
     diff_objects as _diff_objects,
     is_property_linked as _is_property_linked,
     is_property_enabled as _is_property_enabled,
+    get_effective_output_bus as _get_effective_output_bus,
 )
 from core.waapi_util import ping as _ping
 from typing import Optional
@@ -471,6 +472,43 @@ def get_blend_track_assignments(
             fadePosition: fade curve start/end (Manual mode only)"""
     try:
         return _get_blend_assignments({"object": blend_track_guid})
+    except CannotConnectToWaapiException:
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
+def get_effective_output_bus(
+    object_path: Optional[str] = None,
+    object_guid: Optional[str] = None,
+    object_name_with_type: Optional[str] = None,
+):
+    """Resolve the effective (inherited) output bus for an Actor-Mixer hierarchy object.
+
+    WAAPI's @OutputBus returns the LOCAL value, which defaults to "Master Audio Bus"
+    when an object has not set Override Output. This tool walks the ancestor chain to
+    find the first non-default @OutputBus assignment and returns its full bus path.
+
+    Args:
+        object_path:           Project path. e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\SFX\\Barrage"
+        object_guid:           GUID. e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
+        object_name_with_type: type:name. e.g. "Sound:Barrage"
+
+    Provide exactly one of object_path, object_guid, or object_name_with_type.
+
+    Returns:
+        object:        {name, path, type} of the queried object
+        effective_bus: {id, name} of the resolved output bus
+        bus_path:      full project path of the bus (e.g. "\\Master-Mixer Hierarchy\\Default Work Unit\\Master Audio Bus\\SFX")
+        is_hdr:        whether the object is inside an HDR window (true if the resolved bus or any of its bus ancestors has HdrEnable=true)
+        hdr_bus:       {id, name, path} of the bus that establishes the HDR window, or null if not in one
+        set_by:        "self", the ancestor path that sets the override, or "default (no ancestor overrides)"
+    """
+    try:
+        return _get_effective_output_bus(
+            object_path=object_path,
+            object_guid=object_guid,
+            object_name_with_type=object_name_with_type,
+        )
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 

@@ -166,3 +166,91 @@ def summarize_and_save(results: list[dict], output_file: str = None) -> dict:
         "output_file": str(output_path),
         "preview": results[:10],
     }
+
+
+_MASTER_AUDIO_BUS_NAME = "Master Audio Bus"
+def get_effective_output_bus(
+        object_path: Optional[str] = None,
+        object_guid: Optional[str] = None,
+        object_name_with_type: Optional[str] = None) -> dict:
+    """Resolve the effective output bus for an Actor-Mixer hierarchy object.
+
+    WAAPI's @OutputBus returns the locally stored value regardless of whether the
+    object is actually routing through it. The authoritative signal is @OverrideOutput:
+    when false, the local @OutputBus is ignored at runtime and the object inherits from
+    the nearest ancestor with @OverrideOutput=true. This function walks self + ancestors
+    and returns the first @OutputBus where @OverrideOutput is true, falling back to
+    Master Audio Bus if nothing in the chain overrides.
+    """
+    if object_path:
+        from_clause = {"path": [object_path]}
+    elif object_guid:
+        from_clause = {"id": [object_guid]}
+    elif object_name_with_type:
+        from_clause = {"name": [object_name_with_type]}
+    else:
+        return {"error": "Must specify object_path, object_guid, or object_name_with_type"}
+
+    return_fields = ["id", "name", "type", "path", "@OutputBus", "@OverrideOutput"]
+
+    obj_results = execute_object_query({"from": from_clause, "options": {"return": return_fields}})
+    if not obj_results:
+        return {"error": "Object not found"}
+    obj = obj_results[0]
+
+    ancestor_results = execute_object_query({
+        "from": from_clause,
+        "transform": [{"select": ["ancestors"]}],
+        "options": {"return": return_fields},
+    })
+
+    effective_bus = None
+    set_by = None
+    for index, node in enumerate([obj, *ancestor_results]):
+        if node.get("@OverrideOutput") is not True:
+            continue
+        bus = node.get("@OutputBus") or {}
+        if not (bus.get("id") or bus.get("name")):
+            continue
+        effective_bus = bus
+        set_by = "self" if index == 0 else node.get("path", "unknown ancestor")
+        break
+
+    if not effective_bus:
+        effective_bus = {"name": _MASTER_AUDIO_BUS_NAME}
+        set_by = "default (no ancestor overrides)"
+
+    # 5. Look up full bus path + HDR check (HDR is established at the topmost
+    #    HdrEnable=true bus in the chain; any descendant bus is inside that window)
+    bus_path = None
+    is_hdr = False
+    hdr_bus = None
+    bus_id = effective_bus.get("id")
+    if bus_id:
+        bus_return = ["id", "name", "path", "@HdrEnable"]
+        bus_results = execute_object_query({
+            "from": {"id": [bus_id]},
+            "options": {"return": bus_return},
+        })
+        if bus_results:
+            bus_path = bus_results[0].get("path", "")
+
+        bus_ancestors = execute_object_query({
+            "from": {"id": [bus_id]},
+            "transform": [{"select": ["ancestors"]}],
+            "options": {"return": bus_return},
+        })
+        for node in [*bus_results, *bus_ancestors]:
+            if node.get("@HdrEnable") is True:
+                is_hdr = True
+                hdr_bus = {"id": node.get("id"), "name": node.get("name"), "path": node.get("path")}
+                break
+
+    return {
+        "object": {"name": obj.get("name"), "path": obj.get("path"), "type": obj.get("type")},
+        "effective_bus": effective_bus,
+        "bus_path": bus_path,
+        "is_hdr": is_hdr,
+        "hdr_bus": hdr_bus,
+        "set_by": set_by
+    }
