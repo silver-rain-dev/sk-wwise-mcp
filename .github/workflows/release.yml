@@ -46,7 +46,7 @@ jobs:
       - name: Smoke test
         shell: pwsh
         run: |
-          .\dist\sk-wwise-mcp\sk-wwise-mcp.exe --help
+          .\dist\sk-wwise-mcp.exe --help
           if ($LASTEXITCODE -ne 0) { throw "smoke test failed" }
 
       # Manual / non-tag runs: keep zip as artifact for inspection.
@@ -55,7 +55,7 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: sk-wwise-mcp-${{ github.sha }}
-          path: dist/sk-wwise-mcp.zip
+          path: sk-wwise-mcp.zip
           if-no-files-found: error
 
       # Tag pushes: publish a GitHub release with the zip attached.
@@ -63,6 +63,6 @@ jobs:
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
-          files: dist/sk-wwise-mcp.zip
+          files: sk-wwise-mcp.zip
           generate_release_notes: true
           fail_on_unmatched_files: true
