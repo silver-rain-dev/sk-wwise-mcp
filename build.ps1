@@ -1,45 +1,145 @@
-# Build sk-wwise-mcp release bundle.
+# Build the sk-wwise-mcp release bundle.
 # Run from the repo root:
 #   .\build.ps1
 #
-# Output:
-#   dist\sk-wwise-mcp\           <- ready-to-zip folder (exe + .mcp.json + .claude\skills + README)
-#   dist\sk-wwise-mcp.zip        <- zipped bundle for GitHub release upload
+# Output (dist\ IS the portable bundle -- copy it anywhere and run `claude`):
+#   dist\sk-wwise-mcp.exe           <- single binary; dispatches via --server
+#   dist\.mcp.json                  <- Claude Code MCP config (1 entry, mounts all)
+#   dist\.mcp.per-server.json       <- alt template: 12 entries, one per server
+#   dist\.vscode\mcp.json           <- VS Code Copilot MCP config (mounts all)
+#   dist\.vscode\mcp.per-server.json
+#   dist\.claude\skills\            <- routing skills (auto-loaded by Claude CLI)
+#   dist\README.md                  <- end-user "Quick start" doc
+#   sk-wwise-mcp.zip                <- zipped bundle for GitHub release upload
+#
+# After a successful build, `cd dist && claude` registers the server with no
+# further configuration. Paths in every config are relative, so the folder is
+# fully portable. The default .mcp.json is a single entry -- one exe process
+# mounts every server (fewest permission prompts, like sk-fmod-mcp). Swap in
+# .mcp.per-server.json for one entry per server (better LLM tool-routing
+# accuracy, and lets you scope access per role by deleting entries).
 
 $ErrorActionPreference = "Stop"
 
-$BundleDir = ".\dist\sk-wwise-mcp"
-$ZipPath   = ".\dist\sk-wwise-mcp.zip"
+$RepoRoot = $PSScriptRoot
+$DistDir  = Join-Path $RepoRoot "dist"
+$BuildDir = Join-Path $RepoRoot "build"
+$Spec     = Join-Path $RepoRoot "sk-wwise-mcp.spec"
+# Zip lives outside dist\ so it can't try to include itself in the archive.
+$ZipPath  = Join-Path $RepoRoot "sk-wwise-mcp.zip"
 
+# Server suffix list (kebab-case) -- must match cli.py SERVERS keys.
+$Servers = @(
+    "browse",
+    "audition",
+    "objects",
+    "containers",
+    "pipeline",
+    "generic",
+    "media-read",
+    "profiling",
+    "profiling-control",
+    "command-line",
+    "remote",
+    "ui"
+)
+
+# 1. Verify pyinstaller is on PATH; install into the active interpreter if not.
 if (-not (Get-Command pyinstaller -ErrorAction SilentlyContinue)) {
-    Write-Host "Installing pyinstaller..."
-    pip install pyinstaller
+    Write-Host "pyinstaller not found on PATH - installing..."
+    python -m pip install pyinstaller
+    if ($LASTEXITCODE -ne 0) {
+        throw "pip install pyinstaller failed (exit $LASTEXITCODE)."
+    }
 }
 
-# 1. Build the exe straight into the bundle folder.
-if (Test-Path $BundleDir) { Remove-Item $BundleDir -Recurse -Force }
-pyinstaller --clean --distpath $BundleDir .\sk-wwise-mcp.spec
-if ($LASTEXITCODE -ne 0) { throw "pyinstaller failed (exit $LASTEXITCODE)" }
+# 2. Clean previous build artefacts so old binaries don't linger.
+if (Test-Path $DistDir)  { Remove-Item $DistDir  -Recurse -Force }
+if (Test-Path $BuildDir) { Remove-Item $BuildDir -Recurse -Force }
 
-# 2. Copy the bundle's .mcp.json (relative paths, all 12 servers).
-Copy-Item .\release\mcp.json (Join-Path $BundleDir ".mcp.json") -Force
+# 3. Single PyInstaller invocation -- cli.py is the entry, every mcp_*
+#    package is hidden-imported via the spec. onefile -> dist\sk-wwise-mcp.exe.
+Write-Host ""
+Write-Host "=== Building sk-wwise-mcp.exe ==="
+pyinstaller --clean --noconfirm --distpath $DistDir --workpath $BuildDir $Spec
+if ($LASTEXITCODE -ne 0) { throw "pyinstaller failed (exit $LASTEXITCODE)." }
 
-# 3. Copy the README.
-Copy-Item .\release\README.md (Join-Path $BundleDir "README.md") -Force
+# 4. Write dist\.mcp.json (Claude Code) and dist\.vscode\mcp.json (VS Code
+#    Copilot). Both use relative paths so the folder is fully portable.
+#    Default shape: a single entry, no flag -- one exe process mounts every
+#    server (like sk-fmod-mcp).
+$Utf8NoBom = New-Object System.Text.UTF8Encoding $false
+$VsCodeDir = Join-Path $DistDir ".vscode"
+New-Item -ItemType Directory -Force -Path $VsCodeDir | Out-Null
 
-# 4. Copy wwise-* skills into the bundle's .claude\skills\ so Claude CLI auto-loads
-#    them. Skip eval-* (test-only, not for end users).
-$SkillsDest = Join-Path $BundleDir ".claude\skills"
-New-Item -ItemType Directory -Force -Path $SkillsDest | Out-Null
-Copy-Item .\.claude\skills\wwise-* $SkillsDest -Recurse -Force
+$ClaudeCfg = [ordered]@{
+    mcpServers = [ordered]@{
+        "sk-wwise" = [ordered]@{ command = "./sk-wwise-mcp.exe"; args = @() }
+    }
+}
+$CopilotCfg = [ordered]@{
+    servers = [ordered]@{
+        "sk-wwise" = [ordered]@{ command = "./sk-wwise-mcp.exe"; args = @() }
+    }
+}
+[IO.File]::WriteAllText((Join-Path $DistDir ".mcp.json"),
+    ($ClaudeCfg | ConvertTo-Json -Depth 5), $Utf8NoBom)
+[IO.File]::WriteAllText((Join-Path $VsCodeDir "mcp.json"),
+    ($CopilotCfg | ConvertTo-Json -Depth 5), $Utf8NoBom)
 
-# 5. Zip it.
+# 5. Write the per-server variant of each config as a sibling template: one
+#    entry per server (--server <name>). Better tool-routing accuracy, and
+#    lets users scope role-based access by deleting entries.
+$ClaudePerServer  = [ordered]@{ mcpServers = [ordered]@{} }
+$CopilotPerServer = [ordered]@{ servers    = [ordered]@{} }
+foreach ($srv in $Servers) {
+    $entry = [ordered]@{
+        command = "./sk-wwise-mcp.exe"
+        args    = @("--server", $srv)
+    }
+    $ClaudePerServer.mcpServers["sk-wwise-$srv"] = $entry
+    $CopilotPerServer.servers["sk-wwise-$srv"]   = $entry
+}
+[IO.File]::WriteAllText((Join-Path $DistDir ".mcp.per-server.json"),
+    ($ClaudePerServer | ConvertTo-Json -Depth 5), $Utf8NoBom)
+[IO.File]::WriteAllText((Join-Path $VsCodeDir "mcp.per-server.json"),
+    ($CopilotPerServer | ConvertTo-Json -Depth 5), $Utf8NoBom)
+
+# 6. Copy wwise-* Agent Skills into the bundle so Claude CLI auto-loads
+#    routing guidance. eval-* skills are test-only -- skip them.
+$SkillsSrc  = Join-Path $RepoRoot ".claude\skills"
+$SkillsDest = Join-Path $DistDir  ".claude\skills"
+if (Test-Path $SkillsSrc) {
+    New-Item -ItemType Directory -Force -Path $SkillsDest | Out-Null
+    Get-ChildItem $SkillsSrc -Directory |
+        Where-Object { $_.Name -like "wwise-*" } |
+        ForEach-Object { Copy-Item $_.FullName $SkillsDest -Recurse -Force }
+} else {
+    Write-Host "warning: $SkillsSrc not found - bundle will ship without .claude\skills."
+}
+
+# 7. Copy the end-user README into the bundle.
+$ReleaseReadme = Join-Path $RepoRoot "release\README.md"
+if (Test-Path $ReleaseReadme) {
+    Copy-Item $ReleaseReadme (Join-Path $DistDir "README.md") -Force
+}
+
+# 8. Zip the bundle contents for GitHub release upload (exe at archive root).
 if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }
-Compress-Archive -Path $BundleDir -DestinationPath $ZipPath
+Compress-Archive -Path (Join-Path $DistDir "*") -DestinationPath $ZipPath
 
+# 9. Print a summary so the operator sees bundle size.
 Write-Host ""
-Write-Host "Bundle:  $BundleDir"
-Write-Host "Zip:     $ZipPath"
+Write-Host "=== Build complete ==="
+$Exe = Get-Item (Join-Path $DistDir "sk-wwise-mcp.exe")
+$TotalMB = [math]::Round(($Exe.Length / 1MB), 1)
+Write-Host ("Bundle:  {0}" -f $DistDir)
+Write-Host ("Binary:  sk-wwise-mcp.exe ({0} MB)" -f $TotalMB)
+Write-Host ("Zip:     {0}" -f $ZipPath)
 Write-Host ""
-Write-Host "Smoke test:"
-Write-Host "  $BundleDir\sk-wwise-mcp.exe --help"
+Write-Host "Smoke test (no Wwise needed):"
+Write-Host "  & '$DistDir\sk-wwise-mcp.exe' --server browse  # boots and hangs on stdio"
+Write-Host ""
+Write-Host "Real test (Wwise running with WAAPI enabled):"
+Write-Host "  cd $DistDir"
+Write-Host "  claude"
