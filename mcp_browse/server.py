@@ -11,6 +11,7 @@ from core.query import (
     summarize_and_save,
     get_project_info,
     get_installation_info,
+    get_wwise_version,
     get_object_property,
     get_property_info as _get_property_info,
     get_object_types as _get_object_types,
@@ -398,9 +399,22 @@ def get_wwise_object_types():
 def get_wwise_installation_info():
     """Get information about the running Wwise installation, including version, platform, and build number.
 
-    Use this to verify which version of Wwise is running and confirm connectivity to the authoring tool."""
+    Use this to verify which version of Wwise is running and confirm connectivity to the authoring tool.
+    Includes a `version_support` block reporting whether the running version meets the minimum
+    supported Wwise version (2022+)."""
     try:
-        return get_installation_info()
+        info = get_installation_info()
+        if isinstance(info, dict):
+            try:
+                from core.wwise_version import support_status
+                raw = info.get("version")
+                version = raw if isinstance(raw, dict) and raw.get("year") else None
+                if version is not None and not version.get("display"):
+                    version = {**version, "display": version.get("displayName")}
+                info["version_support"] = support_status(version)
+            except Exception:
+                pass
+        return info
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
 

@@ -142,6 +142,29 @@ def get_installation_info() -> dict:
     """Executes ak.wwise.core.getInfo and return the results"""
     return call("ak.wwise.core.getInfo")
 
+
+def get_wwise_version() -> dict:
+    """Return the running Wwise version plus minimum-supported-version status.
+
+    Parses ak.wwise.core.getInfo into a normalized version dict and checks it
+    against core.wwise_version.MIN_WWISE_YEAR.
+    """
+    from core.wwise_version import support_status, MIN_WWISE_YEAR
+
+    info = get_installation_info()
+    raw = info.get("version") if isinstance(info, dict) else None
+    version = None
+    if isinstance(raw, dict) and raw.get("year"):
+        version = {
+            "year": raw.get("year"),
+            "major": raw.get("major"),
+            "minor": raw.get("minor"),
+            "build": raw.get("build"),
+            "display": raw.get("displayName") or f"{raw.get('year')}.{raw.get('major')}.{raw.get('minor')}",
+        }
+    status = support_status(version)
+    return {"version": version, "min_supported_year": MIN_WWISE_YEAR, **status}
+
 def get_project_info() -> dict:
     """Executes ak.wwise.core.getProjectInfo and return the results"""
     return call("ak.wwise.core.getProjectInfo")
