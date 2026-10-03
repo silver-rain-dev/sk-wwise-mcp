@@ -223,3 +223,32 @@ def test_is_process_alive_current_process():
 
 def test_is_process_alive_invalid_pid():
     assert _is_process_alive(9999999) is False
+
+
+# --- WAAPI URL in connection errors (SK_WWISE_WAAPI_URL) ---
+
+
+def test_connection_error_names_the_url_that_was_tried(monkeypatch):
+    import pytest
+    from waapi import CannotConnectToWaapiException
+    import core.waapi_util as wu
+
+    monkeypatch.setenv("SK_WWISE_WAAPI_URL", "not-a-valid-url")
+    monkeypatch.setattr(wu, "_dispatcher", None)
+    with patch("core.waapi_util.WaapiClient", side_effect=ValueError("bad scheme")), \
+         patch("core.waapi_util._read_server_lockfile", return_value=None):
+        with pytest.raises(CannotConnectToWaapiException) as exc:
+            wu._ensure_connection(max_retries=1, base_delay=0)
+    assert "not-a-valid-url" in str(exc.value)
+
+
+def test_dispatcher_wraps_client_error_with_url(monkeypatch):
+    import pytest
+    from waapi import CannotConnectToWaapiException
+    from core.waapi_util import WaapiDispatcher
+
+    monkeypatch.setenv("SK_WWISE_WAAPI_URL", "ws://bad-host:1/waapi")
+    with patch("core.waapi_util.WaapiClient", side_effect=ValueError("bad scheme")):
+        with pytest.raises(CannotConnectToWaapiException) as exc:
+            WaapiDispatcher()
+    assert "ws://bad-host:1/waapi" in str(exc.value)
