@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from core.env_setting import read_env_setting
 from core.wwise_version import MIN_WWISE_YEAR, parse_version, version_sort_key
 
 
@@ -61,7 +62,7 @@ def resolve_wwise_cli() -> dict:
 
     Returns {"path": str, "version": dict|None, "source": str}.
     """
-    override = os.environ.get("SK_WWISE_CONSOLE", "").strip().strip('"')
+    override = read_env_setting("SK_WWISE_CONSOLE").strip('"')
     if override:
         return {"path": override, "version": parse_version(override), "source": "SK_WWISE_CONSOLE"}
 
