@@ -1,0 +1,34 @@
+{
+  "mcpServers": {
+    "sk-wwise-browse": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "cli.py",
+        "--server",
+        "browse"
+      ]
+    },
+    "sk-wwise-audition": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "cli.py",
+        "--server",
+        "audition"
+      ]
+    },
+    "sk-wwise-media-read": {
+      "command": "uv",
+      "args": [
+        "run",
+        "python",
+        "cli.py",
+        "--server",
+        "media-read"
+      ]
+    }
+  }
+}

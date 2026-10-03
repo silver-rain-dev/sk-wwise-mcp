@@ -49,17 +49,19 @@ set SK_WWISE_CONSOLE=C:\Program Files\Audiokinetic\Wwise 2023.1.3.8471\Authoring
 
 Ask Claude to *"run cli_diagnostics"* to see which console was picked and every version it found. The WAAPI servers always talk to whichever Wwise instance is **running** — *"get the Wwise installation info"* reports that version and whether it's supported.
 
-## Role-based access
+## Role-based access (profiles)
 
-Want a junior designer to only browse and audition, not delete anything? Switch to the per-server config (rename `.mcp.per-server.json` to `.mcp.json`) and delete the entries they shouldn't have. The tools physically don't load into their context after that — no prompt-engineered guardrails to circumvent.
+Want a sound designer to only browse and audition, not delete anything? Run the exe with a **profile**: `sk-wwise-mcp.exe --profile listen`. Only that profile's servers load, so the other tools physically don't exist in Claude's context — no prompt-engineered guardrails to circumvent. `--profile` cannot be combined with `--server`. `--server a,b` still mounts an exact list.
 
-| Role | Keep (`--server …`) |
+| Profile | Servers (`--profile <name>`) |
 |---|---|
-| Junior sound designer | `browse`, `audition`, `media-read` |
-| Senior sound designer | + `objects`, `containers`, `pipeline` |
-| Build engineer | + `command-line` |
-| QA / profiling | `browse`, `audition`, `profiling`, `profiling-control`, `remote` |
-| Admin | all 12 |
+| `listen` | `browse`, `audition`, `media-read` |
+| `author` | `browse`, `audition`, `media-read`, `objects`, `containers`, `pipeline`, `ui` |
+| `build` | `browse`, `audition`, `media-read`, `objects`, `containers`, `pipeline`, `ui`, `command-line` |
+| `qa` | `browse`, `audition`, `profiling`, `profiling-control`, `remote` |
+| `admin` | `browse`, `audition`, `media-read`, `objects`, `containers`, `pipeline`, `ui`, `command-line`, `generic`, `profiling`, `profiling-control`, `remote` |
+
+`author` is the default profile for the plugin. `build` is `author` plus `command-line`. `admin` is all 12 servers. The old role names are renamed: `viewer` and `designer` are now `listen`; `editor` is now `author`.
 
 ## Troubleshooting
 
