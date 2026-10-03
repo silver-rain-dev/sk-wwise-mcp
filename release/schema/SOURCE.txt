@@ -1,0 +1,7 @@
+mcpb-manifest-v0.3.schema.json
+  Source:  https://github.com/modelcontextprotocol/mcpb/blob/70fe3b34cd6dff1b3bba046638edc72a6467a4fb/schemas/mcpb-manifest-v0.3.schema.json
+  Fetched: 2026-10-03 (mcpb main at 70fe3b3; @anthropic-ai/mcpb 2.1.2)
+  Why 0.3: it is what `mcpb init`/`mcpb pack` default to (DEFAULT_MANIFEST_VERSION)
+           and what mcpb-manifest-latest.schema.json contains.
+  Unmodified copy. To update, re-download and bump MANIFEST_VERSION in
+  release/build_mcpb.py.

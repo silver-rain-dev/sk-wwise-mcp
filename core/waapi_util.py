@@ -9,6 +9,8 @@ from queue import Queue, Full
 
 from waapi import WaapiClient, CannotConnectToWaapiException
 
+from core.env_setting import read_env_setting
+
 
 def _lockfile_path() -> Path:
     # When frozen (PyInstaller), __file__ lives inside the per-process _MEIPASS
@@ -32,8 +34,7 @@ def resolve_waapi_url() -> str:
     to ``DEFAULT_WAAPI_URL``. Every server shares this connection layer, so
     the setting applies to all of them.
     """
-    value = os.environ.get(WAAPI_URL_ENV, "").strip()
-    return value or DEFAULT_WAAPI_URL
+    return read_env_setting(WAAPI_URL_ENV) or DEFAULT_WAAPI_URL
 
 
 class WaapiQueueFullError(Exception):

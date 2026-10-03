@@ -11,6 +11,7 @@
 #   dist\.claude\skills\            <- routing skills (auto-loaded by Claude CLI)
 #   dist\README.md                  <- end-user "Quick start" doc
 #   sk-wwise-mcp.zip                <- zipped bundle for GitHub release upload
+#   sk-wwise-mcp.mcpb               <- MCP Bundle (exe + manifest + user settings)
 #
 # After a successful build, `cd dist && claude` registers the server with no
 # further configuration. Paths in every config are relative, so the folder is
@@ -27,6 +28,8 @@ $BuildDir = Join-Path $RepoRoot "build"
 $Spec     = Join-Path $RepoRoot "sk-wwise-mcp.spec"
 # Zip lives outside dist\ so it can't try to include itself in the archive.
 $ZipPath  = Join-Path $RepoRoot "sk-wwise-mcp.zip"
+# The MCP Bundle sits next to the zip, also outside dist\.
+$McpbPath = Join-Path $RepoRoot "sk-wwise-mcp.mcpb"
 
 # Server suffix list (kebab-case) -- must match cli.py SERVERS keys.
 $Servers = @(
@@ -128,7 +131,26 @@ if (Test-Path $ReleaseReadme) {
 if (Test-Path $ZipPath) { Remove-Item $ZipPath -Force }
 Compress-Archive -Path (Join-Path $DistDir "*") -DestinationPath $ZipPath
 
-# 9. Print a summary so the operator sees bundle size.
+# 9. Build the MCP Bundle (.mcpb): exe + generated manifest. The manifest comes
+#    from release\build_mcpb.py so the profile list follows core\profiles.py.
+#    Validated with the official mcpb CLI when npx is available; the unit
+#    tests validate against the vendored schema either way.
+if (Test-Path $McpbPath) { Remove-Item $McpbPath -Force }
+python (Join-Path $RepoRoot "release\build_mcpb.py") --exe (Join-Path $DistDir "sk-wwise-mcp.exe") --out $McpbPath
+if ($LASTEXITCODE -ne 0) { throw "build_mcpb.py failed (exit $LASTEXITCODE)." }
+if (Get-Command npx -ErrorAction SilentlyContinue) {
+    $McpbCheck = Join-Path $BuildDir "mcpb-check"
+    if (Test-Path $McpbCheck) { Remove-Item $McpbCheck -Recurse -Force }
+    # Expand-Archive only accepts .zip, so extract with .NET.
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [IO.Compression.ZipFile]::ExtractToDirectory($McpbPath, $McpbCheck)
+    npx --yes @anthropic-ai/mcpb validate (Join-Path $McpbCheck "manifest.json")
+    if ($LASTEXITCODE -ne 0) { throw "mcpb validate failed (exit $LASTEXITCODE)." }
+} else {
+    Write-Host "note: npx not found - skipped official mcpb validate."
+}
+
+# 10. Print a summary so the operator sees bundle size.
 Write-Host ""
 Write-Host "=== Build complete ==="
 $Exe = Get-Item (Join-Path $DistDir "sk-wwise-mcp.exe")
@@ -136,6 +158,7 @@ $TotalMB = [math]::Round(($Exe.Length / 1MB), 1)
 Write-Host ("Bundle:  {0}" -f $DistDir)
 Write-Host ("Binary:  sk-wwise-mcp.exe ({0} MB)" -f $TotalMB)
 Write-Host ("Zip:     {0}" -f $ZipPath)
+Write-Host ("Mcpb:    {0}" -f $McpbPath)
 Write-Host ""
 Write-Host "Smoke test (no Wwise needed):"
 Write-Host "  & '$DistDir\sk-wwise-mcp.exe' --server browse  # boots and hangs on stdio"

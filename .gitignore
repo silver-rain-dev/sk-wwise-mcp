@@ -12,6 +12,7 @@ __pycache__/
 dist/
 build/
 sk-wwise-mcp.zip
+sk-wwise-mcp.mcpb
 
 # Pytest
 .pytest_cache/
