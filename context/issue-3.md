@@ -1,0 +1,3 @@
+- [2026-10-03, wave 1, issue #3] The WAAPI URL env var is `SK_WWISE_WAAPI_URL`, resolved by `core.waapi_util.resolve_waapi_url()`.
+  - Why: all servers share `WaapiDispatcher`, which builds `WaapiClient(resolve_waapi_url())`. Unset, empty or whitespace-only gives `DEFAULT_WAAPI_URL` (`ws://127.0.0.1:8080/waapi`).
+  - Affects: issue #6 (.mcpb) should map the `waapi_url` setting to `SK_WWISE_WAAPI_URL`. Connection errors now include the URL tried. `wamp_port` in `mcp_command_line` is a different setting and is unchanged.

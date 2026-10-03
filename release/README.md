@@ -39,6 +39,19 @@ The default `.mcp.json` mounts **every server in a single process** (one entry, 
 - **Wwise 2022 or later** with WAAPI enabled (for everything except `--server command-line`).
 - **An MCP-capable host** — Claude Code, Claude Desktop, VS Code Copilot, Cursor, Windsurf, or any other agent that supports MCP. For Claude Code: `npm install -g @anthropic-ai/claude-code`. (Config for Claude and VS Code Copilot ships in this folder; other hosts register the exe per their own MCP docs — see the note under Quick start.)
 
+### Custom WAAPI URL
+
+The WAAPI servers connect to `ws://127.0.0.1:8080/waapi` by default. If your Wwise Authoring API listens on another port or host, set `SK_WWISE_WAAPI_URL` before launching `claude`:
+
+```
+set SK_WWISE_WAAPI_URL=ws://127.0.0.1:9090/waapi
+```
+
+- Unset, empty or whitespace-only means the default URL.
+- It applies to every server (they share one connection layer).
+- If the connection fails, the error message names the URL that was tried.
+- This is separate from `wamp_port` in `cli_start_waapi_server`, which sets the port a headless WwiseConsole listens on.
+
 ### Multiple Wwise versions installed?
 
 The `command-line` server (WwiseConsole) auto-picks the **newest 2022+ install** under `Program Files\Audiokinetic`. To pin a specific version, set `SK_WWISE_CONSOLE` to the full path of that version's `WwiseConsole.exe` before launching `claude`:

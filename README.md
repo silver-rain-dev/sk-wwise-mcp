@@ -119,6 +119,8 @@ The setup script will:
 
 Open Wwise with a project and ensure WAAPI is enabled (Project > User Preferences > Enable Wwise Authoring API).
 
+The servers connect to `ws://127.0.0.1:8080/waapi`. To use a different URL, set the `SK_WWISE_WAAPI_URL` environment variable before starting the server. Empty or unset means the default.
+
 ### 3. Verify connectivity
 
 In Claude Code or your agent:

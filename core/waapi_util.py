@@ -21,6 +21,20 @@ def _lockfile_path() -> Path:
 
 _LOCKFILE = _lockfile_path()
 
+DEFAULT_WAAPI_URL = "ws://127.0.0.1:8080/waapi"
+WAAPI_URL_ENV = "SK_WWISE_WAAPI_URL"
+
+
+def resolve_waapi_url() -> str:
+    """Return the WAAPI URL to connect to.
+
+    Reads ``SK_WWISE_WAAPI_URL``. Unset, empty or whitespace-only falls back
+    to ``DEFAULT_WAAPI_URL``. Every server shares this connection layer, so
+    the setting applies to all of them.
+    """
+    value = os.environ.get(WAAPI_URL_ENV, "").strip()
+    return value or DEFAULT_WAAPI_URL
+
 
 class WaapiQueueFullError(Exception):
     pass
@@ -60,10 +74,18 @@ class WaapiDispatcher:
     def _run(self):
         """Worker thread: create client (if not injected), then process queue."""
         if self._client is None:
+            url = resolve_waapi_url()
             try:
-                self._client = WaapiClient()
+                self._client = WaapiClient(url)
             except Exception as e:
-                self._connect_error = e
+                if url in str(e):
+                    self._connect_error = e
+                else:
+                    wrapped = CannotConnectToWaapiException(
+                        f"Could not connect to WAAPI at {url}: {e}"
+                    )
+                    wrapped.__cause__ = e
+                    self._connect_error = wrapped
                 self._ready.set()
                 return
         self._ready.set()
@@ -315,8 +337,11 @@ def _ensure_connection(max_retries: int = 3, base_delay: float = 1.0) -> WaapiDi
             except Exception:
                 pass
 
+    url = resolve_waapi_url()
     raise CannotConnectToWaapiException(
-        "Could not connect to WAAPI. Is Wwise running with the Authoring API enabled?"
+        f"Could not connect to WAAPI at {url}. Is Wwise running with the "
+        f"Authoring API enabled? (URL comes from {WAAPI_URL_ENV}, "
+        f"default {DEFAULT_WAAPI_URL})"
     )
 
 

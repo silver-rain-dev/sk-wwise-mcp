@@ -156,3 +156,48 @@ def test_queue_full_raises():
     # At least some calls should succeed, queue full may or may not trigger
     # depending on timing - just verify no deadlock occurred
     assert True
+
+
+# ---------------------------------------------------------------------------
+# WAAPI URL resolution (SK_WWISE_WAAPI_URL)
+# ---------------------------------------------------------------------------
+
+import pytest
+from unittest.mock import patch
+
+from core.waapi_util import DEFAULT_WAAPI_URL
+
+
+def _fake_waapi_client():
+    client = MagicMock()
+    client.is_connected.return_value = True
+    return client
+
+
+def test_dispatcher_uses_default_url_when_env_unset(monkeypatch):
+    monkeypatch.delenv("SK_WWISE_WAAPI_URL", raising=False)
+    with patch("core.waapi_util.WaapiClient", return_value=_fake_waapi_client()) as ctor:
+        WaapiDispatcher()
+    ctor.assert_called_once_with("ws://127.0.0.1:8080/waapi")
+    assert DEFAULT_WAAPI_URL == "ws://127.0.0.1:8080/waapi"
+
+
+def test_dispatcher_uses_env_url_when_set(monkeypatch):
+    monkeypatch.setenv("SK_WWISE_WAAPI_URL", "ws://studio-pc:9090/waapi")
+    with patch("core.waapi_util.WaapiClient", return_value=_fake_waapi_client()) as ctor:
+        WaapiDispatcher()
+    ctor.assert_called_once_with("ws://studio-pc:9090/waapi")
+
+
+@pytest.mark.parametrize("value", ["", "   ", "\t\n"])
+def test_dispatcher_blank_env_falls_back_to_default(monkeypatch, value):
+    monkeypatch.setenv("SK_WWISE_WAAPI_URL", value)
+    with patch("core.waapi_util.WaapiClient", return_value=_fake_waapi_client()) as ctor:
+        WaapiDispatcher()
+    ctor.assert_called_once_with("ws://127.0.0.1:8080/waapi")
+
+
+def test_env_url_is_stripped(monkeypatch):
+    monkeypatch.setenv("SK_WWISE_WAAPI_URL", "  ws://h:1/waapi \n")
+    from core.waapi_util import resolve_waapi_url
+    assert resolve_waapi_url() == "ws://h:1/waapi"
