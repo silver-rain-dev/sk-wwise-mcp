@@ -224,6 +224,41 @@ def _get_dispatcher() -> WaapiDispatcher:
     return _dispatcher
 
 
+# Emitted at most once per process: warn (to stderr, never stdout) if the
+# running Wwise is older than the minimum supported version. Non-fatal —
+# pre-2022 may still work for many calls, the user just gets a heads-up.
+_version_checked = False
+
+
+def _warn_if_unsupported(dispatcher: WaapiDispatcher) -> WaapiDispatcher:
+    """Check the running Wwise version once and warn if below the minimum.
+
+    Returns the dispatcher unchanged so callers can `return
+    _warn_if_unsupported(dispatcher)`. Any failure here is swallowed — a
+    version check must never break a working connection.
+    """
+    global _version_checked
+    if _version_checked:
+        return dispatcher
+    try:
+        from core.wwise_version import support_status
+        info = dispatcher.call("ak.wwise.core.getInfo", {})
+        raw = info.get("version") if isinstance(info, dict) else None
+        version = raw if isinstance(raw, dict) and raw.get("year") else None
+        status = support_status(version)
+        # Mark checked once we get a definitive answer; leave it unset on an
+        # unknown version so a later, identifiable connection can still warn.
+        if status.get("supported") is False:
+            _version_checked = True
+            print(f"[sk-wwise-mcp] WARNING: {status['message']}",
+                  file=sys.stderr, flush=True)
+        elif status.get("supported") is True:
+            _version_checked = True
+    except Exception:
+        pass
+    return dispatcher
+
+
 def _reconnect():
     """Force a fresh WAAPI connection and dispatcher."""
     global _dispatcher
@@ -251,7 +286,7 @@ def _ensure_connection(max_retries: int = 3, base_delay: float = 1.0) -> WaapiDi
         dispatcher = _get_dispatcher()
         result = dispatcher.call("ak.wwise.core.ping", {})
         if result and result.get("isAvailable"):
-            return dispatcher
+            return _warn_if_unsupported(dispatcher)
     except Exception:
         pass
 
@@ -264,7 +299,7 @@ def _ensure_connection(max_retries: int = 3, base_delay: float = 1.0) -> WaapiDi
             dispatcher = _get_dispatcher()
             result = dispatcher.call("ak.wwise.core.ping", {})
             if result and result.get("isAvailable"):
-                return dispatcher
+                return _warn_if_unsupported(dispatcher)
         except Exception:
             pass
 
@@ -276,7 +311,7 @@ def _ensure_connection(max_retries: int = 3, base_delay: float = 1.0) -> WaapiDi
                 dispatcher = _get_dispatcher()
                 result = dispatcher.call("ak.wwise.core.ping", {})
                 if result and result.get("isAvailable"):
-                    return dispatcher
+                    return _warn_if_unsupported(dispatcher)
             except Exception:
                 pass
 

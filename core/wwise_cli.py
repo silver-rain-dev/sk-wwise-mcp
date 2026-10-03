@@ -3,19 +3,89 @@ import os
 from pathlib import Path
 from typing import Optional
 
+from core.wwise_version import MIN_WWISE_YEAR, parse_version, version_sort_key
+
+
+def _candidate_bin_paths(root: Path):
+    """Yield possible WwiseConsole.exe paths inside an install root."""
+    for arch in ("x64", "arm64"):
+        yield root / "Authoring" / arch / "Release" / "bin" / "WwiseConsole.exe"
+
+
+def _audiokinetic_roots():
+    """Directories that may contain `Wwise <version>` install folders."""
+    seen = set()
+    for env in ("ProgramFiles", "ProgramFiles(x86)"):
+        base = os.environ.get(env)
+        if base:
+            yield Path(base) / "Audiokinetic"
+    for hard in (r"C:\Program Files\Audiokinetic", r"C:\Program Files (x86)\Audiokinetic"):
+        if hard not in seen:
+            seen.add(hard)
+            yield Path(hard)
+
+
+def list_installed_consoles() -> list[dict]:
+    """Discover installed WwiseConsole.exe files, newest version first.
+
+    Scans `Wwise <version>` folders under the Audiokinetic install roots and
+    parses the version from each folder name. Returns
+    [{"path": str, "version": dict|None}, ...].
+    """
+    found: dict[str, dict | None] = {}
+    for ak_root in _audiokinetic_roots():
+        if not ak_root.is_dir():
+            continue
+        for child in ak_root.iterdir():
+            if not child.is_dir():
+                continue
+            for exe in _candidate_bin_paths(child):
+                if exe.exists():
+                    found[str(exe)] = parse_version(child.name)
+                    break
+    items = [{"path": p, "version": v} for p, v in found.items()]
+    items.sort(key=lambda i: version_sort_key(i["version"]), reverse=True)
+    return items
+
+
+def resolve_wwise_cli() -> dict:
+    """Resolve which WwiseConsole.exe to use, and report how it was chosen.
+
+    Resolution order:
+      1. SK_WWISE_CONSOLE env var -- explicit full path to a WwiseConsole.exe
+         (use this to pin a specific Wwise version).
+      2. WWISEROOT env var -- the Launcher's "active" install.
+      3. Auto-discovery under Program Files\\Audiokinetic -- newest install
+         whose year >= MIN_WWISE_YEAR, else newest found.
+      4. "WwiseConsole" on PATH.
+
+    Returns {"path": str, "version": dict|None, "source": str}.
+    """
+    override = os.environ.get("SK_WWISE_CONSOLE", "").strip().strip('"')
+    if override:
+        return {"path": override, "version": parse_version(override), "source": "SK_WWISE_CONSOLE"}
+
+    wwiseroot = os.environ.get("WWISEROOT", "").strip().strip('"')
+    if wwiseroot:
+        for exe in _candidate_bin_paths(Path(wwiseroot)):
+            if exe.exists():
+                return {"path": str(exe), "version": parse_version(str(exe)) or parse_version(wwiseroot), "source": "WWISEROOT"}
+
+    installs = list_installed_consoles()
+    supported = [i for i in installs if i["version"] and i["version"]["year"] >= MIN_WWISE_YEAR]
+    if supported:
+        chosen = supported[0]
+        return {"path": chosen["path"], "version": chosen["version"], "source": "discovered"}
+    if installs:
+        chosen = installs[0]
+        return {"path": chosen["path"], "version": chosen["version"], "source": "discovered-below-minimum"}
+
+    return {"path": "WwiseConsole", "version": None, "source": "PATH"}
+
 
 def _find_wwise_cli() -> str:
-    """Find the WwiseConsole executable path."""
-    # Common install locations on Windows
-    candidates = [
-        Path(os.environ.get("WWISEROOT", "")) / "Authoring" / "x64" / "Release" / "bin" / "WwiseConsole.exe",
-        Path(os.environ.get("WWISEROOT", "")) / "Authoring" / "arm64" / "Release" / "bin" / "WwiseConsole.exe",
-    ]
-    for path in candidates:
-        if path.exists():
-            return str(path)
-    # Fallback: assume it's on PATH
-    return "WwiseConsole"
+    """Find the WwiseConsole executable path (resolution order in resolve_wwise_cli)."""
+    return resolve_wwise_cli()["path"]
 
 
 def _run_cli(args: list[str], timeout: int = 300) -> dict:

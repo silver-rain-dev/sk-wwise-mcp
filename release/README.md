@@ -4,37 +4,69 @@ MCP servers that let Claude browse and interact with Wwise via the Wwise Authori
 
 ## Quick start
 
-1. **Unzip** this folder anywhere on disk.
-2. **Make sure Wwise is running** with the Authoring API enabled (Project Settings → Authoring API → "Enable Wwise Authoring API").
+1. **Unzip / copy** this folder anywhere on disk.
+2. **Make sure Wwise is running** with the Authoring API enabled (Project Settings → Authoring API → "Enable Wwise Authoring API"). `sk-wwise-mcp.exe --server command-line` works headlessly without Wwise.
 3. **Open a terminal in this folder** and run:
    ```
    claude
    ```
-   Claude CLI auto-detects `.mcp.json` (registers 12 MCP servers) and `.claude/skills/` (loads routing guidance) on launch.
-4. **Allow MCP servers** when Claude prompts you (one-time per server).
+   Claude CLI auto-detects `.mcp.json` (registers the server) and `.claude/skills/` (loads routing guidance) on launch.
+4. **Allow the MCP server** when Claude prompts you (one-time).
 
 That's it. Try: *"Ping Wwise"* or *"List all events in my project"*.
+
+> **Using a different agent?** This is a plain MCP server — any MCP-capable host (Claude Desktop, VS Code Copilot, Cursor, Windsurf, …) works. The steps above are written for Claude because that's the config shipped here (`.mcp.json`). For another host, register the same `sk-wwise-mcp.exe` per that host's MCP setup docs — or simply **ask your agent to register the MCP server in this folder** and let it wire up its own config from the included `.mcp.json`.
 
 ## What's in this folder
 
 | Path | Purpose |
 | --- | --- |
-| `sk-wwise-mcp.exe` | Single binary that hosts all 12 MCP servers. Claude launches it once per server with a `--server <name>` argument. |
-| `.mcp.json` | MCP server registry. Tells Claude which servers exist and how to launch them. |
+| `sk-wwise-mcp.exe` | Single binary that hosts all 12 servers. With no flag it mounts every server in one process; `--server <name>` exposes just one. |
+| `.mcp.json` | MCP host registry — a single entry, no flag, so one exe process mounts all 12 servers. Relative path, so the folder is safe to move. |
+| `.mcp.per-server.json` | Alternate registry: 12 entries, one `--server <name>` each. Rename to `.mcp.json` to use it. |
+| `.vscode/mcp.json` | Same registry for VS Code Copilot (`.vscode/mcp.per-server.json` is the per-server variant). |
 | `.claude/skills/` | Routing skills — short docs that teach Claude which MCP tool fits which task. Loaded automatically. |
+
+### One process vs per-server
+
+The default `.mcp.json` mounts **every server in a single process** (one entry, no flag) — fewest permission prompts, simplest setup. All ~80+ tools share one server.
+
+`.mcp.per-server.json` registers **one MCP server per `--server`** (12 entries). Each server's tool set stays small, which improves Claude's tool-routing accuracy and lets you scope access per role (see below). To switch, replace `.mcp.json` with the contents of `.mcp.per-server.json`.
 
 ## Requirements
 
-- **Windows 10/11** (this build is Windows-only).
-- **Wwise** with WAAPI enabled.
-- **Claude CLI** installed (`npm install -g @anthropic-ai/claude-code`).
+- **Windows 10 / 11** (this build is Windows-only).
+- **Wwise 2022 or later** with WAAPI enabled (for everything except `--server command-line`).
+- **An MCP-capable host** — Claude Code, Claude Desktop, VS Code Copilot, Cursor, Windsurf, or any other agent that supports MCP. For Claude Code: `npm install -g @anthropic-ai/claude-code`. (Config for Claude and VS Code Copilot ships in this folder; other hosts register the exe per their own MCP docs — see the note under Quick start.)
+
+### Multiple Wwise versions installed?
+
+The `command-line` server (WwiseConsole) auto-picks the **newest 2022+ install** under `Program Files\Audiokinetic`. To pin a specific version, set `SK_WWISE_CONSOLE` to the full path of that version's `WwiseConsole.exe` before launching `claude`:
+
+```
+set SK_WWISE_CONSOLE=C:\Program Files\Audiokinetic\Wwise 2023.1.3.8471\Authoring\x64\Release\bin\WwiseConsole.exe
+```
+
+Ask Claude to *"run cli_diagnostics"* to see which console was picked and every version it found. The WAAPI servers always talk to whichever Wwise instance is **running** — *"get the Wwise installation info"* reports that version and whether it's supported.
+
+## Role-based access
+
+Want a junior designer to only browse and audition, not delete anything? Switch to the per-server config (rename `.mcp.per-server.json` to `.mcp.json`) and delete the entries they shouldn't have. The tools physically don't load into their context after that — no prompt-engineered guardrails to circumvent.
+
+| Role | Keep (`--server …`) |
+|---|---|
+| Junior sound designer | `browse`, `audition`, `media-read` |
+| Senior sound designer | + `objects`, `containers`, `pipeline` |
+| Build engineer | + `command-line` |
+| QA / profiling | `browse`, `audition`, `profiling`, `profiling-control`, `remote` |
+| Admin | all 12 |
 
 ## Troubleshooting
 
 **"Could not connect to Waapi"** — Wwise isn't running, or WAAPI is disabled. Check Project Settings → Authoring API.
 
-**"Windows protected your PC" SmartScreen warning** — the exe isn't code-signed. Click "More info" → "Run anyway".
+**"Windows protected your PC" SmartScreen warning** — the exe isn't code-signed. Click **More info → Run anyway**. Windows remembers the exe after the first time.
 
-**Servers don't appear in Claude** — make sure you launched `claude` from inside this folder. `.mcp.json` is project-scoped.
+**Servers don't appear in Claude** — make sure you launched `claude` from inside this folder. `.mcp.json` is project-scoped (cwd-relative).
 
 **Need to move the folder** — fine, paths in `.mcp.json` are relative. Just `cd` to the new location and run `claude` again.

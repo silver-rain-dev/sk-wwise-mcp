@@ -3,9 +3,16 @@
 One executable, dispatched by --server. Used by both `python cli.py` and the
 PyInstaller-built `sk-wwise-mcp.exe`.
 
-Example:
+Omit --server to mount every server's tools on a single FastMCP instance
+(the "all-in-one" config); pass --server <name> (or a comma-separated list)
+to expose only those. The shipped .mcp.json registers one entry per server
+(better tool-routing accuracy); .mcp.all-in-one.json uses the no-flag form.
+
+Examples:
     python cli.py --server browse
     sk-wwise-mcp.exe --server audition
+    sk-wwise-mcp.exe --server browse,objects
+    sk-wwise-mcp.exe                       # all 12 servers on one instance
 """
 
 import argparse
@@ -28,21 +35,57 @@ SERVERS = {
 }
 
 
+def _resolve_servers(spec):
+    """Map a --server value (None, one name, or comma list) to server keys."""
+    if not spec:
+        return list(SERVERS)
+    names = [n.strip() for n in spec.split(",") if n.strip()]
+    unknown = [n for n in names if n not in SERVERS]
+    if unknown:
+        raise SystemExit(
+            f"unknown server(s): {', '.join(unknown)}. "
+            f"valid: {', '.join(sorted(SERVERS))}"
+        )
+    if not names:
+        raise SystemExit("--server was given an empty value")
+    return names
+
+
 def main():
     parser = argparse.ArgumentParser(
         prog="sk-wwise-mcp",
-        description="SK Wwise MCP server dispatcher.",
+        description=(
+            "SK Wwise MCP server dispatcher. Omit --server to mount every "
+            "server's tools on one instance; pass --server <name> (or a "
+            "comma-separated list) to expose only those."
+        ),
     )
     parser.add_argument(
         "--server",
-        required=True,
-        choices=sorted(SERVERS),
-        help="Which MCP server to launch on stdio.",
+        help=(
+            "Comma-separated server names from: "
+            + ", ".join(sorted(SERVERS))
+            + ". Omit to enable all."
+        ),
     )
     args = parser.parse_args()
+    names = _resolve_servers(args.server)
 
-    module = importlib.import_module(SERVERS[args.server])
-    module.mcp.run(transport="stdio")
+    # Single-server fast path: run the underlying instance directly. Skips the
+    # mount layer and keeps the more specific sk-wwise-<name> server identity.
+    if len(names) == 1:
+        module = importlib.import_module(SERVERS[names[0]])
+        module.mcp.run(transport="stdio")
+        return
+
+    # All / multi-server path: mount each child into a master instance.
+    from fastmcp import FastMCP
+
+    master = FastMCP("sk-wwise")
+    for name in names:
+        module = importlib.import_module(SERVERS[name])
+        master.mount(module.mcp)
+    master.run(transport="stdio")
 
 
 if __name__ == "__main__":

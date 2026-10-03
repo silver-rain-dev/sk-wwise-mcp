@@ -21,6 +21,31 @@ from waapi import CannotConnectToWaapiException
 mcp = FastMCP(name="SK Wwise MCP Command Line")
 
 
+@mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})
+def cli_diagnostics():
+    """Report which WwiseConsole.exe these CLI tools will run, its version, and
+    whether it meets the minimum supported Wwise version (2022+). Use this when
+    multiple Wwise versions are installed, or when a CLI tool reports
+    "WwiseConsole not found".
+
+    Resolution order:
+      1. SK_WWISE_CONSOLE env var (explicit full path -- pin a version here)
+      2. WWISEROOT env var (the Launcher's active install)
+      3. Auto-discovery under Program Files\\Audiokinetic (newest 2022+ install)
+      4. WwiseConsole on PATH
+
+    Returns the chosen console, a support check, and every install discovered."""
+    from core.wwise_cli import resolve_wwise_cli, list_installed_consoles
+    from core.wwise_version import support_status, MIN_WWISE_YEAR
+    chosen = resolve_wwise_cli()
+    return {
+        "chosen": chosen,
+        "version_support": support_status(chosen.get("version")),
+        "min_supported_year": MIN_WWISE_YEAR,
+        "all_discovered": list_installed_consoles(),
+    }
+
+
 @mcp.tool(annotations={"destructiveHint": False, "openWorldHint": False})
 def cli_create_new_project(
     project_path: str,
