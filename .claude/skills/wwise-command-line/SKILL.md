@@ -9,6 +9,8 @@ metadata:
 
 # Wwise Command Line (No WAAPI Needed)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `build`, `admin`.
+
 ## Tools
 
 - `cli_create_new_project` — create a blank Wwise project

@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Media Read (Audio Analysis, Read-Only)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `listen`, `author`, `build`, `admin`.
+
 ## Tools
 
 - `get_audio_source_peaks` — waveform peak data (specify time range, or omit for trimmed region)

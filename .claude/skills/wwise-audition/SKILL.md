@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Audition (Playback)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `listen`, `author`, `build`, `qa`, `admin`.
+
 ## Tools
 
 - `create_wwise_transport` — create transport for an object (auto-prepares for instant playback)
