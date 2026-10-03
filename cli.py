@@ -57,9 +57,9 @@ def _resolve_servers(spec):
 
 def _resolve_selection(server_spec, profile):
     """Map --server / --profile to server keys. The two are mutually exclusive."""
-    if profile and server_spec:
+    if profile is not None and server_spec:
         raise SystemExit("--profile and --server cannot be used together")
-    if profile:
+    if profile is not None:
         try:
             return resolve_profile(profile)
         except ValueError as e:

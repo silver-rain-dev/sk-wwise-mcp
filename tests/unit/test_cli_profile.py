@@ -70,3 +70,33 @@ def test_server_comma_list_still_works(monkeypatch):
         monkeypatch, ["sk-wwise-mcp", "--server", "browse,objects"]
     )
     assert imported == [cli.SERVERS["browse"], cli.SERVERS["objects"]]
+
+
+@pytest.mark.parametrize("blank", ["", " ", "   ", "\t"])
+def test_blank_profile_exits_listing_valid_names(monkeypatch, blank):
+    # Fail closed: an empty/blank --profile must never fall through to "mount all".
+    monkeypatch.setattr(sys, "argv", ["sk-wwise-mcp", "--profile", blank])
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+    assert exc.value.code != 0
+    message = str(exc.value)
+    for name in PROFILE_NAMES:
+        assert name in message
+
+
+@pytest.mark.parametrize("blank", ["", " "])
+def test_blank_profile_with_server_is_a_conflict_error(monkeypatch, blank):
+    monkeypatch.setattr(
+        sys, "argv", ["sk-wwise-mcp", "--profile", blank, "--server", "browse"]
+    )
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+    assert "cannot be used together" in str(exc.value)
+
+
+def test_profile_name_is_not_stripped(monkeypatch):
+    # Same strictness as core.profiles.resolve_profile: " author" is unknown.
+    monkeypatch.setattr(sys, "argv", ["sk-wwise-mcp", "--profile", " author"])
+    with pytest.raises(SystemExit) as exc:
+        cli.main()
+    assert "unknown profile" in str(exc.value)
