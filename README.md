@@ -218,13 +218,17 @@ Most MCP projects expose one server with all tools. This project deliberately sp
 
 Not every user needs every tool. By separating servers along permission boundaries, teams can grant access by role:
 
-| Role                     | Servers                                  | Can do                                                       |
-| ------------------------ | ---------------------------------------- | ------------------------------------------------------------ |
-| Sound designer (junior)  | browse, audition, media_read             | Explore the project, preview sounds, inspect audio           |
-| Sound designer (senior)  | + objects, containers                    | Create/edit objects, configure containers                    |
-| Build engineer           | + pipeline, command_line                 | Import audio, generate SoundBanks, run CLI operations        |
-| QA / profiling           | + profiling, profiling_control, remote   | Profile performance, connect to devkits                      |
-| Admin                    | all servers                              | Full access including UI automation and generic WAAPI        |
+Pick one with `sk-wwise-mcp --profile <name>` (defined in `core/profiles.py`). `--server a,b` still mounts an exact list.
+
+| Profile | Servers | Can do |
+| ------- | ------- | ------ |
+| `listen` | `browse`, `audition`, `media-read` | Explore the project, preview sounds, inspect audio |
+| `author` | `browse`, `audition`, `media-read`, `objects`, `containers`, `pipeline`, `ui` | Create/edit objects, configure containers, import audio, generate SoundBanks, drive the UI |
+| `build` | `browse`, `audition`, `media-read`, `objects`, `containers`, `pipeline`, `ui`, `command-line` | Everything in author, plus WwiseConsole operations |
+| `qa` | `browse`, `audition`, `profiling`, `profiling-control`, `remote` | Profile performance, connect to devkits |
+| `admin` | `browse`, `audition`, `media-read`, `objects`, `containers`, `pipeline`, `ui`, `command-line`, `generic`, `profiling`, `profiling-control`, `remote` | Full access, including generic WAAPI |
+
+The old role names are renamed: `viewer` and `designer` are now `listen`; `editor` is now `author`.
 
 An agent with only `browse` enabled physically cannot delete objects or overwrite SoundBank settings — the tools don't exist in its context. This is a stronger guarantee than relying on prompt instructions like "don't modify anything."
 

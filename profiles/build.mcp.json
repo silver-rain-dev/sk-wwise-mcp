@@ -79,46 +79,6 @@
         "--server",
         "command-line"
       ]
-    },
-    "sk-wwise-generic": {
-      "command": "uv",
-      "args": [
-        "run",
-        "python",
-        "cli.py",
-        "--server",
-        "generic"
-      ]
-    },
-    "sk-wwise-profiling": {
-      "command": "uv",
-      "args": [
-        "run",
-        "python",
-        "cli.py",
-        "--server",
-        "profiling"
-      ]
-    },
-    "sk-wwise-profiling-control": {
-      "command": "uv",
-      "args": [
-        "run",
-        "python",
-        "cli.py",
-        "--server",
-        "profiling-control"
-      ]
-    },
-    "sk-wwise-remote": {
-      "command": "uv",
-      "args": [
-        "run",
-        "python",
-        "cli.py",
-        "--server",
-        "remote"
-      ]
     }
   }
 }
