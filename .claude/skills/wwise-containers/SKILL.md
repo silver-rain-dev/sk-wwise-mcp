@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Containers (Type-Specific Configuration)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `author`, `build`, `admin`.
+
 ## Tools
 
 - `add_wwise_switch_assignments` / `remove_wwise_switch_assignments` — Switch Container child-to-switch mapping (batch)

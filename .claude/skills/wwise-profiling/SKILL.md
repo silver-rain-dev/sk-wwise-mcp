@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Profiling (Read-Only Data)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `qa`, `admin`.
+
 ## Tools
 
 - `get_profiler_voices` — playing voices with volume, priority, virtual status

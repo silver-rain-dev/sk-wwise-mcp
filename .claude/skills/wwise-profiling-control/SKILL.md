@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Profiling Control
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `qa`, `admin`.
+
 ## Tools
 
 - `enable_wwise_profiler_data` — enable/disable specific data types for capture

@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Remote (Connection Management)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `qa`, `admin`.
+
 ## Tools
 
 - `get_available_remote_consoles` — discover available Wwise/game instances on the network

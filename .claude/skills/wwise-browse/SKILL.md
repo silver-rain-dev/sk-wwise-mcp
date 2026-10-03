@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Browse (Read-Only)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `listen`, `author`, `build`, `qa`, `admin`.
+
 ## Tools
 
 - `ping_wwise` — check WAAPI connectivity

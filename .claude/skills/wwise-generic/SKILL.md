@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Generic (Fallback Only)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `admin`.
+
 ## Tools
 
 1. `list_waapi_functions` — find the relevant WAAPI function

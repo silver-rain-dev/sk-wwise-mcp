@@ -21,6 +21,7 @@ import argparse
 import importlib
 import sys
 
+from core.instructions import build_instructions
 from core.profiles import PROFILE_NAMES, resolve_profile
 
 SERVERS = {
@@ -96,21 +97,32 @@ def main():
     args = parser.parse_args()
     names = _resolve_selection(args.server, args.profile)
 
+    _build_server(names).run(transport="stdio")
+
+
+def _build_server(names):
+    """Return the FastMCP instance to run for these server keys.
+
+    Both paths send routing guidance (MCP instructions) built from exactly the
+    servers mounted; see core/instructions.py.
+    """
+    instructions = build_instructions(names)
+
     # Single-server fast path: run the underlying instance directly. Skips the
     # mount layer and keeps the more specific sk-wwise-<name> server identity.
     if len(names) == 1:
         module = importlib.import_module(SERVERS[names[0]])
-        module.mcp.run(transport="stdio")
-        return
+        module.mcp.instructions = instructions
+        return module.mcp
 
     # All / multi-server path: mount each child into a master instance.
     from fastmcp import FastMCP
 
-    master = FastMCP("sk-wwise")
+    master = FastMCP("sk-wwise", instructions=instructions)
     for name in names:
         module = importlib.import_module(SERVERS[name])
         master.mount(module.mcp)
-    master.run(transport="stdio")
+    return master
 
 
 if __name__ == "__main__":

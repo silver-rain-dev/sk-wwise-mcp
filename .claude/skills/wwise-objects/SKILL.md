@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Objects (General Editing)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `author`, `build`, `admin`.
+
 ## Tools
 
 - `create_wwise_objects` — create one or more objects (batch), with optional children and properties

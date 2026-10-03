@@ -8,6 +8,8 @@ metadata:
 
 # Wwise UI (Application Control)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `author`, `build`, `admin`.
+
 ## Tools
 
 - `open_project` / `close_project` — project file management

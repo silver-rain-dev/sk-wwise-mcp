@@ -8,6 +8,8 @@ metadata:
 
 # Wwise Pipeline (Import, Build, Save)
 
+**Missing tools?** If these tools are not available, the active profile excludes them. Tell the user which profile adds them: `author`, `build`, `admin`.
+
 ## Tools
 
 - `import_audio_files` — import audio and create Wwise objects (per-file entries)

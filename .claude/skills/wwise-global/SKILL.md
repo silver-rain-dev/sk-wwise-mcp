@@ -19,6 +19,7 @@ metadata:
 - Clean up temporary files (JSON, TSV, Python scripts) created for batch operations after the operation completes successfully
 - `mcp_command_line` works without WAAPI — use it when Wwise is not running
 - Profiler data requires `enable_wwise_profiler_data` to be called first for most data types
+- If a tool from a wwise-* skill is missing, the active profile (`listen`, `author`, `build`, `qa`, `admin`) excludes its server. Tell the user which profile adds it (see the profile line in that skill)
 
 ## WAAPI Gotchas
 
