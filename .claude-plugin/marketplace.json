@@ -1,0 +1,19 @@
+{
+  "name": "sk-wwise",
+  "description": "Claude plugin for browsing and editing Wwise projects.",
+  "owner": {
+    "name": "silver-rain-dev",
+    "url": "https://github.com/silver-rain-dev"
+  },
+  "plugins": [
+    {
+      "name": "sk-wwise-mcp",
+      "description": "Browse and edit a running Wwise project through the Wwise Authoring API (WAAPI). Bundles the MCP server and the wwise-* routing skills.",
+      "version": "0.1.0",
+      "source": {
+        "source": "archive",
+        "url": "https://github.com/silver-rain-dev/sk-wwise-mcp/releases/download/v0.1.0/sk-wwise-plugin.zip"
+      }
+    }
+  ]
+}

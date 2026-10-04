@@ -13,6 +13,7 @@ dist/
 build/
 sk-wwise-mcp.zip
 sk-wwise-mcp.mcpb
+sk-wwise-plugin.zip
 
 # Pytest
 .pytest_cache/

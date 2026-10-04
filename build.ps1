@@ -12,6 +12,7 @@
 #   dist\README.md                  <- end-user "Quick start" doc
 #   sk-wwise-mcp.zip                <- zipped bundle for GitHub release upload
 #   sk-wwise-mcp.mcpb               <- MCP Bundle (exe + manifest + user settings)
+#   sk-wwise-plugin.zip             <- Claude plugin (plugin.json + .mcpb + wwise-* skills)
 #
 # After a successful build, `cd dist && claude` registers the server with no
 # further configuration. Paths in every config are relative, so the folder is
@@ -30,6 +31,8 @@ $Spec     = Join-Path $RepoRoot "sk-wwise-mcp.spec"
 $ZipPath  = Join-Path $RepoRoot "sk-wwise-mcp.zip"
 # The MCP Bundle sits next to the zip, also outside dist\.
 $McpbPath = Join-Path $RepoRoot "sk-wwise-mcp.mcpb"
+# The Claude plugin zip (embeds the .mcpb), also outside dist\.
+$PluginZipPath = Join-Path $RepoRoot "sk-wwise-plugin.zip"
 
 # Server suffix list (kebab-case) -- must match cli.py SERVERS keys.
 $Servers = @(
@@ -150,6 +153,25 @@ if (Get-Command npx -ErrorAction SilentlyContinue) {
     Write-Host "note: npx not found - skipped official mcpb validate."
 }
 
+# 9b. Build the Claude plugin zip: plugin.json + the .mcpb above + wwise-* skills
+#     (release\build_plugin.py). Validated with `claude plugin validate` when the
+#     claude CLI is on PATH; the unit tests check the layout either way.
+#     Release CI rewrites .claude-plugin\marketplace.json (build_plugin.py
+#     --write-marketplace); a local build leaves the repo file alone.
+if (Test-Path $PluginZipPath) { Remove-Item $PluginZipPath -Force }
+python (Join-Path $RepoRoot "release\build_plugin.py") --mcpb $McpbPath --out $PluginZipPath
+if ($LASTEXITCODE -ne 0) { throw "build_plugin.py failed (exit $LASTEXITCODE)." }
+if (Get-Command claude -ErrorAction SilentlyContinue) {
+    $PluginCheck = Join-Path $BuildDir "plugin-check"
+    if (Test-Path $PluginCheck) { Remove-Item $PluginCheck -Recurse -Force }
+    Add-Type -AssemblyName System.IO.Compression.FileSystem
+    [IO.Compression.ZipFile]::ExtractToDirectory($PluginZipPath, $PluginCheck)
+    claude plugin validate $PluginCheck
+    if ($LASTEXITCODE -ne 0) { throw "claude plugin validate failed (exit $LASTEXITCODE)." }
+} else {
+    Write-Host "note: claude CLI not found - skipped claude plugin validate."
+}
+
 # 10. Print a summary so the operator sees bundle size.
 Write-Host ""
 Write-Host "=== Build complete ==="
@@ -159,6 +181,7 @@ Write-Host ("Bundle:  {0}" -f $DistDir)
 Write-Host ("Binary:  sk-wwise-mcp.exe ({0} MB)" -f $TotalMB)
 Write-Host ("Zip:     {0}" -f $ZipPath)
 Write-Host ("Mcpb:    {0}" -f $McpbPath)
+Write-Host ("Plugin:  {0}" -f $PluginZipPath)
 Write-Host ""
 Write-Host "Smoke test (no Wwise needed):"
 Write-Host "  & '$DistDir\sk-wwise-mcp.exe' --server browse  # boots and hangs on stdio"
