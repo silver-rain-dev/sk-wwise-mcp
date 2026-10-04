@@ -15,6 +15,7 @@ metadata:
 - `ping_wwise` — check WAAPI connectivity
 - `get_wwise_installation_info` / `get_wwise_project_info` — version and project metadata
 - `build_object_info_query` + `get_wwise_object_info` — query objects (always build first, then execute)
+- `show_wwise_object` — show one object (by path, GUID or `type:name`) with key properties and children. In clients with MCP Apps support it renders an interactive Object Inspector (click a child to drill down); elsewhere it returns the same data as JSON. Read-only.
 - `get_wwise_object_types` — discover valid object types and classIds
 - `get_property_and_reference_names` — discover properties/references for an object
 - `get_wwise_property_info` — get property type, min/max, default value
