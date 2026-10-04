@@ -24,6 +24,9 @@ from core.query import (
     get_effective_output_bus as _get_effective_output_bus,
 )
 from core.waapi_util import ping as _ping
+from core.inspector import INSPECTOR_URI, get_object_inspector_data as _get_object_inspector_data
+from core.inspector_html import INSPECTOR_HTML
+from fastmcp.server.apps import AppConfig
 from typing import Optional
 from waapi import CannotConnectToWaapiException
 
@@ -525,6 +528,57 @@ def get_effective_output_bus(
         )
     except CannotConnectToWaapiException:
         return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.tool(
+    annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False},
+    app=AppConfig(resource_uri=INSPECTOR_URI),
+)
+def show_wwise_object(
+    object_path: Optional[str] = None,
+    object_guid: Optional[str] = None,
+    object_name_with_type: Optional[str] = None,
+):
+    """Show one Wwise object in an interactive Object Inspector (read-only).
+
+    Returns the object's key data and, in clients that support MCP Apps, renders
+    an inspector card where clicking a child drills into it. In other clients the
+    same data comes back as plain JSON.
+
+    Args:
+        object_path:           Project path. e.g. "\\Actor-Mixer Hierarchy\\Default Work Unit\\SFX\\Barrage"
+        object_guid:           GUID. e.g. "{aabbcc00-1122-3344-5566-77889900aabb}"
+        object_name_with_type: type:name. e.g. "Sound:Barrage"
+
+    Provide exactly one of object_path, object_guid, or object_name_with_type.
+
+    Returns:
+        id, name, type, path, notes
+        properties:     a few common properties (Volume, Pitch, LowPassFilter, HighPassFilter)
+        parent:         {id, name, type, path} or null
+        children_count: total number of children
+        children:       up to 100 children as {id, name, type, path}
+
+    Properties are LOCAL values. For the effective output bus use get_effective_output_bus.
+    """
+    try:
+        return _get_object_inspector_data(
+            object_path=object_path,
+            object_guid=object_guid,
+            object_name_with_type=object_name_with_type,
+        )
+    except CannotConnectToWaapiException:
+        return {"error": "Could not connect to Waapi: Is Wwise running and Wwise Authoring API enabled?"}
+
+
+@mcp.resource(
+    INSPECTOR_URI,
+    name="wwise_object_inspector",
+    description="Interactive Object Inspector for show_wwise_object (MCP App, read-only).",
+    app=AppConfig(prefers_border=True),  # no csp: no connect or resource domains
+)
+def object_inspector_ui() -> str:
+    return INSPECTOR_HTML
 
 
 @mcp.tool(annotations={"readOnlyHint": True, "destructiveHint": False, "idempotentHint": True, "openWorldHint": False})

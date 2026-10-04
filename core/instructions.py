@@ -43,6 +43,7 @@ SERVER_NOTES = {
         "Never use the absolute root `\\` as `from_path` (WAAPI returns 0 results); start from "
         "`\\Actor-Mixer Hierarchy`, `\\Events`, `\\Master-Mixer Hierarchy`, `\\SoundBanks` etc. "
         "`@OutputBus` is the local value, not the effective one: use `get_effective_output_bus`. "
+        "To show one object with its children, use `show_wwise_object` (interactive inspector where supported). "
         "Compare objects with `diff_wwise_objects`; discover properties with "
         "`get_property_and_reference_names`; project info with `get_wwise_project_info`."
     ),
