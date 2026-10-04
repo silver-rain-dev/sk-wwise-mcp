@@ -61,7 +61,7 @@ Push a tag like `v0.2.0`. `.github/workflows/release.yml` then:
 
 Notes:
 
-- A manual run (Actions tab, "Build and release", Run workflow) builds the three files and uploads them as workflow artifacts. It does not release or commit.
+- A manual run (Actions tab, "Build and release", Run workflow) builds the three files and uploads them as workflow artifacts. It does not release or commit, on any ref, including a tag chosen in "Use workflow from". Only a pushed `v*` tag releases.
 - Re-running a tag rebuilds and re-uploads the assets and rewrites the same marketplace file. If it is already up to date the commit step does nothing.
 - To roll back a bad release, revert the marketplace commit (one file). The marketplace then points at the previous release again.
 - The marketplace commit is pushed straight to `main`. If `main` gets branch protection that blocks the Actions bot, that step fails after the release is already published. Allow the bot to bypass, or bump by hand: `python release/bump_marketplace.py --tag v0.2.0 --zip sk-wwise-plugin.zip`.

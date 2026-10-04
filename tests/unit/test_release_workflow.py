@@ -18,7 +18,9 @@ WORKFLOW = REPO_ROOT / ".github" / "workflows" / "release.yml"
 BUILD_PS1 = REPO_ROOT / "build.ps1"
 
 ASSETS = {"sk-wwise-plugin.zip", "sk-wwise-mcp.mcpb", "sk-wwise-mcp.zip"}
-TAG_ONLY = "startsWith(github.ref, 'refs/tags/v')"
+
+TAG_REF = "refs/tags/v1.2.3"
+MAIN_REF = "refs/heads/main"
 
 
 @pytest.fixture(scope="module")
@@ -40,6 +42,21 @@ def _step(steps, needle):
 
 def _index(steps, needle):
     return steps.index(_step(steps, needle))
+
+
+def _runs(step, event, ref):
+    """Evaluate a step's `if:` for (event, ref). Only the small expression
+    subset used by this workflow is supported; anything else fails loudly."""
+    expr = step.get("if")
+    if expr is None:
+        return True
+    py = re.sub(r"\$\{\{|\}\}", "", str(expr)).strip()
+    py = py.replace("github.event_name", repr(event))
+    py = re.sub(r"github\.ref\b", repr(ref), py)
+    py = re.sub(r"startsWith\(([^,]+),\s*('[^']*')\)", r"(\1).startswith(\2)", py)
+    py = py.replace("&&", " and ").replace("||", " or ")
+    assert re.fullmatch(r"[\w\s'().:/=!-]*", py), f"unsupported if expression: {expr!r}"
+    return bool(eval(py, {"__builtins__": {}}))
 
 
 def _files(step):
@@ -82,12 +99,29 @@ def test_triggers_are_only_version_tags_and_manual_dispatch(wf):
     assert triggers["push"] == {"tags": ["v*"]}  # no `branches`: a push to main cannot trigger
 
 
-def test_bump_step_runs_only_on_tag_builds(steps):
-    assert _step(steps, "marketplace")["if"] == TAG_ONLY
+RELEASE_ONLY = ("Create release", "marketplace")
 
 
-def test_release_step_runs_only_on_tag_builds(steps):
-    assert _step(steps, "Create release")["if"] == TAG_ONLY
+@pytest.mark.parametrize("needle", RELEASE_ONLY)
+def test_release_only_steps_run_on_a_tag_push(steps, needle):
+    assert _runs(_step(steps, needle), "push", TAG_REF)
+
+
+@pytest.mark.parametrize("needle", RELEASE_ONLY)
+@pytest.mark.parametrize("ref", [TAG_REF, MAIN_REF])
+def test_release_only_steps_never_run_on_manual_dispatch(steps, needle, ref):
+    # "Use workflow from" lists tags, so a dispatch can carry a tag ref.
+    # A manual run must not release or commit, whatever the ref.
+    assert not _runs(_step(steps, needle), "workflow_dispatch", ref)
+
+
+@pytest.mark.parametrize("ref", [TAG_REF, MAIN_REF])
+def test_manual_dispatch_uploads_artifacts_on_any_ref(steps, ref):
+    assert _runs(_step(steps, "Upload artifact"), "workflow_dispatch", ref)
+
+
+def test_tag_push_does_not_upload_workflow_artifacts(steps):
+    assert not _runs(_step(steps, "Upload artifact"), "push", TAG_REF)
 
 
 def test_bump_step_uses_the_script_with_the_tag_and_repo(steps):

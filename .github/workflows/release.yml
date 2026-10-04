@@ -5,8 +5,8 @@ name: Build and release
 #                                  publish a GitHub release with all three
 #                                  assets, then commit the new marketplace.json
 #                                  to main (exact tag URL + version)
-#   - manual dispatch           -> build, upload the three assets as workflow
-#                                  artifacts (no release, no commit)
+#   - manual dispatch (any ref, -> build, upload the three assets as workflow
+#     tags included)               artifacts (no release, no commit)
 #
 # Loop safety: this workflow only triggers on `v*` tags and manual dispatch.
 # The marketplace commit goes to the `main` branch, which matches neither, and
@@ -39,8 +39,9 @@ jobs:
 
       # Tag builds: v0.2.0 -> 0.2.0, checked by the same script that writes
       # marketplace.json. It goes to build.ps1 so the .mcpb manifest, plugin.json
-      # and marketplace.json all carry the tag's version. Manual runs skip this
-      # and use the version in pyproject.toml.
+      # and marketplace.json all carry the tag's version. A manual run on a
+      # branch skips this and uses the version in pyproject.toml; a manual run on
+      # a tag ref also gets the tag's version (it still never releases).
       - name: Resolve version
         if: startsWith(github.ref, 'refs/tags/v')
         id: version
@@ -80,7 +81,8 @@ jobs:
           .\dist\sk-wwise-mcp.exe --help
           if ($LASTEXITCODE -ne 0) { throw "smoke test failed" }
 
-      # Manual / non-tag runs: keep the three assets as artifacts for inspection.
+      # Manual runs (any ref, including a tag): keep the three assets as artifacts
+      # for inspection. A manual run never releases or commits.
       - name: Upload artifact
         if: github.event_name == 'workflow_dispatch'
         uses: actions/upload-artifact@v4
@@ -92,12 +94,12 @@ jobs:
             sk-wwise-mcp.zip
           if-no-files-found: error
 
-      # Tag pushes: publish a GitHub release with the three assets attached.
+      # Tag pushes only (not manual runs, even on a tag ref): publish a GitHub release with the three assets attached.
       #   sk-wwise-plugin.zip  Claude plugin (the marketplace points at this URL)
       #   sk-wwise-mcp.mcpb    standalone bundle for Claude Desktop chat
       #   sk-wwise-mcp.zip     legacy zip (exe + .mcp.json + skills)
       - name: Create release
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
         with:
           files: |
@@ -107,14 +109,14 @@ jobs:
           generate_release_notes: true
           fail_on_unmatched_files: true
 
-      # Tag pushes, after the release exists: write marketplace.json with this
+      # Tag pushes only, after the release exists: write marketplace.json with this
       # tag's exact asset URL, version and the sha256 of the zip that was just
       # released, then commit it to main. A tag checkout is a detached HEAD, so
       # the file is written first (with the script from the tagged commit) into
       # a temp dir, then main is checked out and the file copied over. Re-running
       # a tag produces identical bytes, so "nothing to commit" is a success.
       - name: Update marketplace.json on main
-        if: startsWith(github.ref, 'refs/tags/v')
+        if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
         shell: bash
         env:
           TAG: ${{ github.ref_name }}
