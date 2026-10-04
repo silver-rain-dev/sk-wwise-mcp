@@ -14,12 +14,21 @@
 #   sk-wwise-mcp.mcpb               <- MCP Bundle (exe + manifest + user settings)
 #   sk-wwise-plugin.zip             <- Claude plugin (plugin.json + .mcpb + wwise-* skills)
 #
+# Optional version override (release CI passes the tag's version, e.g. 0.2.0):
+#   .\build.ps1 -Version 0.2.0
+# It goes to build_mcpb.py and build_plugin.py (--version) so the .mcpb manifest
+# and plugin.json agree with the tag. Without it both read pyproject.toml.
+#
 # After a successful build, `cd dist && claude` registers the server with no
 # further configuration. Paths in every config are relative, so the folder is
 # fully portable. The default .mcp.json is a single entry -- one exe process
 # mounts every server (fewest permission prompts, like sk-fmod-mcp). Swap in
 # .mcp.per-server.json for one entry per server (better LLM tool-routing
 # accuracy, and lets you scope access per role by deleting entries).
+
+param(
+    [string]$Version = ""
+)
 
 $ErrorActionPreference = "Stop"
 
@@ -49,6 +58,10 @@ $Servers = @(
     "remote",
     "ui"
 )
+
+# Extra args for the manifest generators; empty unless -Version was given.
+$VersionArgs = @()
+if ($Version) { $VersionArgs = @("--version", $Version) }
 
 # 1. Verify pyinstaller is on PATH; install into the active interpreter if not.
 if (-not (Get-Command pyinstaller -ErrorAction SilentlyContinue)) {
@@ -139,7 +152,7 @@ Compress-Archive -Path (Join-Path $DistDir "*") -DestinationPath $ZipPath
 #    Validated with the official mcpb CLI when npx is available; the unit
 #    tests validate against the vendored schema either way.
 if (Test-Path $McpbPath) { Remove-Item $McpbPath -Force }
-python (Join-Path $RepoRoot "release\build_mcpb.py") --exe (Join-Path $DistDir "sk-wwise-mcp.exe") --out $McpbPath
+python (Join-Path $RepoRoot "release\build_mcpb.py") --exe (Join-Path $DistDir "sk-wwise-mcp.exe") --out $McpbPath @VersionArgs
 if ($LASTEXITCODE -ne 0) { throw "build_mcpb.py failed (exit $LASTEXITCODE)." }
 if (Get-Command npx -ErrorAction SilentlyContinue) {
     $McpbCheck = Join-Path $BuildDir "mcpb-check"
@@ -159,7 +172,7 @@ if (Get-Command npx -ErrorAction SilentlyContinue) {
 #     Release CI rewrites .claude-plugin\marketplace.json (build_plugin.py
 #     --write-marketplace); a local build leaves the repo file alone.
 if (Test-Path $PluginZipPath) { Remove-Item $PluginZipPath -Force }
-python (Join-Path $RepoRoot "release\build_plugin.py") --mcpb $McpbPath --out $PluginZipPath
+python (Join-Path $RepoRoot "release\build_plugin.py") --mcpb $McpbPath --out $PluginZipPath @VersionArgs
 if ($LASTEXITCODE -ne 0) { throw "build_plugin.py failed (exit $LASTEXITCODE)." }
 if (Get-Command claude -ErrorAction SilentlyContinue) {
     $PluginCheck = Join-Path $BuildDir "plugin-check"

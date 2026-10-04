@@ -33,6 +33,40 @@ The default `.mcp.json` mounts **every server in a single process** (one entry, 
 
 `.mcp.per-server.json` registers **one MCP server per `--server`** (12 entries). Each server's tool set stays small, which improves Claude's tool-routing accuracy and lets you scope access per role (see below). To switch, replace `.mcp.json` with the contents of `.mcp.per-server.json`.
 
+## Release artifacts
+
+Each GitHub release has three files. Pick one:
+
+| File | Use it when | How |
+| --- | --- | --- |
+| `sk-wwise-plugin.zip` | You use Claude Desktop (Code tab or local Cowork) or the Claude Code CLI. **This is the main install.** | Do not download it by hand. Add this repo as a plugin marketplace in Claude and install `sk-wwise-mcp@sk-wwise`. The marketplace points at this file. It holds the Wwise tools plus the `wwise-*` skills, and it updates when a new release ships. |
+| `sk-wwise-mcp.mcpb` | You only use Claude Desktop chat and want no skills. | Download it and double-click it in Claude Desktop. It is the same server as in the plugin, with the routing guidance built in. |
+| `sk-wwise-mcp.zip` | You already use the older folder-and-terminal setup. | Unzip it, open a terminal in the folder, run `claude`. See Quick start above. Kept so existing users are not broken. |
+
+```
+claude plugin marketplace add silver-rain-dev/sk-wwise-mcp
+claude plugin install sk-wwise-mcp@sk-wwise
+```
+
+All three hold the same `sk-wwise-mcp.exe` build. The exe is not code-signed, so Windows SmartScreen warns on first run (see Troubleshooting).
+
+### How a release is made (maintainers)
+
+Push a tag like `v0.2.0`. `.github/workflows/release.yml` then:
+
+1. Builds the exe, the `.mcpb`, the plugin zip and the legacy zip with `build.ps1 -Version 0.2.0`, so `plugin.json`, the `.mcpb` manifest and `marketplace.json` all carry the tag's version.
+2. Runs the smoke test (`sk-wwise-mcp.exe --help`).
+3. Publishes a GitHub release with the three files above.
+4. Commits `.claude-plugin/marketplace.json` to `main` with the exact URL of that tag's `sk-wwise-plugin.zip`, the version, and the zip's `sha256` (`release/bump_marketplace.py`). The commit does not start another build: the workflow only runs on `v*` tags and manual runs, and a push made with the built-in token never triggers workflows.
+
+Notes:
+
+- A manual run (Actions tab, "Build and release", Run workflow) builds the three files and uploads them as workflow artifacts. It does not release or commit.
+- Re-running a tag rebuilds and re-uploads the assets and rewrites the same marketplace file. If it is already up to date the commit step does nothing.
+- To roll back a bad release, revert the marketplace commit (one file). The marketplace then points at the previous release again.
+- The marketplace commit is pushed straight to `main`. If `main` gets branch protection that blocks the Actions bot, that step fails after the release is already published. Allow the bot to bypass, or bump by hand: `python release/bump_marketplace.py --tag v0.2.0 --zip sk-wwise-plugin.zip`.
+- To preview the file for a tag without touching the repo: `python release/bump_marketplace.py --tag v0.2.0 --path %TEMP%\marketplace.json`.
+
 ## Requirements
 
 - **Windows 10 / 11** (this build is Windows-only).
