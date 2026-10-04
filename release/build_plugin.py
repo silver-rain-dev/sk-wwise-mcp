@@ -12,10 +12,11 @@ the top of the archive):
 
 This module also produces the marketplace entry for `.claude-plugin/
 marketplace.json` at the repo root (an `archive` source at the GitHub release
-asset URL). Release CI (#8) rewrites that file per tag:
+asset URL). Release CI rewrites that file per tag with
+`release/bump_marketplace.py` (a thin wrapper over `write_marketplace`):
 
     from build_plugin import write_marketplace
-    write_marketplace(version, sha256=...)
+    write_marketplace(version, sha256=..., repo="owner/name")
 
 Entry points:
 
@@ -75,23 +76,24 @@ def build_plugin_manifest(version=None):
     }
 
 
-def release_asset_url(version):
+def release_asset_url(version, repo=GITHUB_REPO):
     """GitHub release asset URL of the plugin zip for `version` (tag `v<version>`)."""
     return (
-        f"https://github.com/{GITHUB_REPO}/releases/download/"
+        f"https://github.com/{repo}/releases/download/"
         f"v{version}/{PLUGIN_ZIP_NAME}"
     )
 
 
-def marketplace_entry(version=None, sha256=None):
+def marketplace_entry(version=None, sha256=None, repo=GITHUB_REPO):
     """The marketplace.json plugin entry for `version` (an `archive` source).
 
     `version` and `source.url` always move together. `sha256` (the plugin
     zip's digest, 64 hex chars) is optional: Claude Code refuses a download
     that does not match it. Release CI knows it only after building the zip.
+    `repo` is `owner/name` of the GitHub repo that hosts the release.
     """
     version = version or _project_version()
-    source = {"source": "archive", "url": release_asset_url(version)}
+    source = {"source": "archive", "url": release_asset_url(version, repo)}
     if sha256:
         source["sha256"] = sha256.lower()
     return {
@@ -102,21 +104,21 @@ def marketplace_entry(version=None, sha256=None):
     }
 
 
-def build_marketplace(version=None, sha256=None):
+def build_marketplace(version=None, sha256=None, repo=GITHUB_REPO):
     """The whole `.claude-plugin/marketplace.json` content as a dict."""
     return {
         "name": MARKETPLACE_NAME,
         "description": "Claude plugin for browsing and editing Wwise projects.",
         "owner": {"name": "silver-rain-dev", "url": "https://github.com/silver-rain-dev"},
-        "plugins": [marketplace_entry(version, sha256)],
+        "plugins": [marketplace_entry(version, sha256, repo)],
     }
 
 
-def write_marketplace(version=None, sha256=None, path=MARKETPLACE_PATH):
+def write_marketplace(version=None, sha256=None, path=MARKETPLACE_PATH, repo=GITHUB_REPO):
     """Write marketplace.json (default: the repo root file). Returns the Path."""
     path = Path(path)
     path.parent.mkdir(parents=True, exist_ok=True)
-    data = build_marketplace(version, sha256)
+    data = build_marketplace(version, sha256, repo)
     path.write_text(json.dumps(data, indent=2) + "\n", encoding="utf-8")
     return path
 
